@@ -1,13 +1,23 @@
 package net.lifove.clami.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
 
 import org.apache.commons.math3.stat.StatUtils;
 
@@ -20,8 +30,13 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.instance.RemoveRange;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
 public class Utils {
 	
+	static String fileName;
 	
 	/**
 	 * Get CLA result
@@ -31,20 +46,21 @@ public class Utils {
 	 * @param suppress detailed prediction results
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress) {
-		getCLAResult(instances,percentileCutoff,positiveLabel,suppress,false); // no experimental as default
+	public static void getCLAResult(Instances instances,double percentileCutoff,double threshold,String positiveLabel,boolean suppress) {
+		getCLAResult(instances,percentileCutoff,threshold,positiveLabel,suppress,false); // no experimental as default
 	}
 	
 	/**
 	 * Get CLA result
 	 * @param instances
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param threshold 
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
 	 * @param experimental option to display a result in a line;
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress,boolean experimental) {
+	public static void getCLAResult(Instances instances,double percentileCutoff,double threshold, String positiveLabel,boolean suppress,boolean experimental) {
 		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
 		// Print CLA results
@@ -90,14 +106,20 @@ public class Utils {
 		double f1 = (2*(precision*recall))/(precision+recall);
 		
 		if(!experimental){
-			System.out.println("TP: " + tP);
-			System.out.println("FP: " + fP);
-			System.out.println("TN: " + tN);
-			System.out.println("FN: " + fN);
+//			System.out.println("TP: " + tP);
+//			System.out.println("FP: " + fP);
+//			System.out.println("TN: " + tN);
+//			System.out.println("FN: " + fN);
+//			
+//			System.out.println("Precision: " + precision);
+//			System.out.println("Recall: " + recall);
+//			System.out.println("F1: " + f1);
 			
-			System.out.println("Precision: " + precision);
-			System.out.println("Recall: " + recall);
-			System.out.println("F1: " + f1);
+			String[] array = fileName.split("/");
+			fileName = array[array.length-1];
+			
+			System.out.print(fileName+","+tP + "," + fP + ","+tN+","+fN + ","+precision+","+recall+","+f1+",");
+			
 		}else{
 			System.out.print(precision + "," + recall + "," + f1);
 		}
@@ -169,8 +191,8 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,double threshold,boolean suppress,String mlAlg) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,threshold,suppress,false,mlAlg); //no experimental as default
 	}
 	
 	/**
@@ -178,8 +200,9 @@ public class Utils {
 	 * @param testInstances
 	 * @param instancesByCLA
 	 * @param positiveLabel
+	 * @param threshold 
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, double threshold, boolean suppress, boolean experimental, String mlAlg) {
 		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
@@ -226,7 +249,12 @@ public class Utils {
 				// Print CLAMI results
 				int TP=0, FP=0,TN=0, FN=0;
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
-					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+//					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+					double[] probability = classifier.distributionForInstance(newTestInstances.get(instIdx));
+//					System.out.println("probability[0]: " + probability[0]);
+//					System.out.println("probability[1]: "+probability[1]);
+					double predictedLabelIdx = (probability[0] >= threshold)? 0.0: 1.0;
+					
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
@@ -255,7 +283,7 @@ public class Utils {
 					printEvaluationResult(TP, TN, FP, FN, experimental);
 					// print AUC value
 					if(!experimental)
-						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+						System.out.println(eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 					else
 						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 				}
@@ -372,6 +400,9 @@ public class Utils {
 	 * @return Instances
 	 */
 	public static Instances loadArff(String path,String classAttributeName){
+		
+		fileName = path;
+		
 		Instances instances=null;
 		BufferedReader reader;
 		try {
