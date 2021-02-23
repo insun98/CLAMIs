@@ -1,13 +1,20 @@
 package net.lifove.clami.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import org.apache.commons.math3.stat.StatUtils;
 
@@ -19,8 +26,11 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.instance.RemoveRange;
+import weka.core.converters.ConverterUtils.DataSource;
 
 public class Utils {
+	
+	static String fileName = new String();
 	
 	
 	/**
@@ -31,25 +41,27 @@ public class Utils {
 	 * @param suppress detailed prediction results
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress) {
-		getCLAResult(instances,percentileCutoff,positiveLabel,suppress,false); // no experimental as default
+	public static void getCLAResult(Instances instances,double percentileCutoff, double threshold, String positiveLabel,boolean suppress) {
+		getCLAResult(instances,percentileCutoff, threshold, positiveLabel,suppress,false); // no experimental as default
 	}
 	
 	/**
 	 * Get CLA result
 	 * @param instances
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param threshold 
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
 	 * @param experimental option to display a result in a line;
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress,boolean experimental) {
-		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
+	public static void getCLAResult(Instances instances,double percentileCutoff,double threshold, String positiveLabel,boolean suppress,boolean experimental) {
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, threshold, positiveLabel);
 		
 		// Print CLA results
 		int TP=0, FP=0,TN=0, FN=0;
 		for(int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++){
+			
 			if(!suppress)
 				System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) +
 						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
@@ -90,18 +102,26 @@ public class Utils {
 		double f1 = (2*(precision*recall))/(precision+recall);
 		
 		if(!experimental){
-			System.out.println("TP: " + tP);
-			System.out.println("FP: " + fP);
-			System.out.println("TN: " + tN);
-			System.out.println("FN: " + fN);
+			String[] array = fileName.split("/");
+			fileName = array[array.length-1];
 			
-			System.out.println("Precision: " + precision);
-			System.out.println("Recall: " + recall);
-			System.out.println("F1: " + f1);
+			System.out.print(fileName+","+tP + "," + fP + ","+tN+","+fN + ","+precision+","+recall+","+f1+",");
+//			System.out.println("TP: " + tP);
+//			System.out.println("FP: " + fP);
+//			System.out.println("TN: " + tN);
+//			System.out.println("FN: " + fN);
+//			
+//			System.out.println("Precision: " + precision);
+//			System.out.println("Recall: " + recall);
+//			System.out.println("F1: " + f1);
+//			System.out.println(fileName);
+			System.out.println();
 		}else{
 			System.out.print(precision + "," + recall + "," + f1);
 		}
+		
 	}
+
 
 	/**
 	 * Get instances labeled by CLA
@@ -110,7 +130,7 @@ public class Utils {
 	 * @param positiveLabel
 	 * @return
 	 */
-	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel) {
+	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, double threshold, String positiveLabel) {
 		
 		//System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
@@ -169,8 +189,8 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, double threshold, boolean suppress,String mlAlg) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff, threshold, suppress,false,mlAlg); //no experimental as default
 	}
 	
 	/**
@@ -178,12 +198,13 @@ public class Utils {
 	 * @param testInstances
 	 * @param instancesByCLA
 	 * @param positiveLabel
+	 * @param threshold 
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, double threshold, boolean suppress, boolean experimental, String mlAlg) {
 		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
-		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, threshold, positiveLabel);
 		
 		// Compute medians
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
@@ -207,9 +228,9 @@ public class Utils {
 			newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
 					
 			// Instance selection
-			cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
-			String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
-			trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
+//			cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
+//			String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,"","",cutoffsForHigherValuesOfAttribute,positiveLabel);
+//			trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
 			
 			if(trainingInstancesByCLAMI.numInstances() != 0)
 				break;
@@ -226,7 +247,178 @@ public class Utils {
 				// Print CLAMI results
 				int TP=0, FP=0,TN=0, FN=0;
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
-					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+					double[] probability = classifier.distributionForInstance(newTestInstances.get(instIdx));
+					
+//					for(int i = 0; i < probability.length; i++){
+//						System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(probability[i]));
+//					}
+					
+					double predictedLabelIdx = (probability[0] >= threshold)? 0.0: 1.0;
+					
+					if(!suppress)
+						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
+							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
+							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
+							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
+
+					
+					// compute T/F/P/N for the original instances labeled.
+					if(!Double.isNaN(instances.get(instIdx).classValue())){
+						if(predictedLabelIdx==instances.get(instIdx).classValue()){
+							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+								TP++;
+							else
+								TN++;
+						}else{
+							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+								FP++;
+							else
+								FN++;
+						}
+					}
+				}
+				
+				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
+				eval.evaluateModel(classifier, newTestInstances);
+				
+				if (TP+TN+FP+FN>0){
+					printEvaluationResult(TP, TN, FP, FN, experimental);
+					// print AUC value
+//					if(!experimental)
+//						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					else
+//						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+				}
+				else if(suppress)
+					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
+				
+			} catch (Exception e) {
+				System.err.println("Specify the correct Weka machine learing classifier with a fully qualified name. E.g., weka.classifiers.functions.Logistic");
+				e.printStackTrace();
+				System.exit(0);
+			}
+		}else{
+			System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+		}
+	}
+	
+	// ---------------------------------------------------------------------------------------------------------------- //
+	
+	/**
+	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult. WITH INVERSE 
+	 * @param testInstances
+	 * @param instancesByCLA
+	 * @param positiveLabel
+	 */
+	public static void getCLAMIResult2(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,double threshold,boolean suppress,String mlAlg, double inversePercent) {
+		getCLAMIResult2(testInstances,instances,positiveLabel,percentileCutoff,threshold,suppress,false,mlAlg,inversePercent); //no experimental as default
+	}
+	
+	/**
+	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult. ** WITH INVERSE **
+	 * @param testInstances
+	 * @param instancesByCLA
+	 * @param positiveLabel
+	 * @param threshold 
+	 */
+	public static void getCLAMIResult2(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, double threshold, boolean suppress, boolean experimental, String mlAlg, double inversePercent) {
+		
+		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
+		
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, threshold, positiveLabel);
+		
+		// Compute medians
+		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
+				
+		// Metric selection
+		
+		// (1) get distinct violation scores ordered by ASC
+		HashMap<Integer,String> metricIdxWithTheSameViolationScores = getMetricIndicesWithTheViolationScores(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
+		Object[] keys = metricIdxWithTheSameViolationScores.keySet().toArray();
+		Arrays.sort(keys);
+		
+		Double minPer = (double) ((int) keys[0]/ (double)instancesByCLA.numInstances())*100.0;
+		Double maxPer = (double) ((int) keys[keys.length-1]/ (double)instancesByCLA.numInstances())*100.0;
+		String additionalSelectedMetricIndices = "";
+		
+		//int i=0;
+		//for(Object key: keys){
+			//System.out.println(i++ + ": " + key + "  " + metricIdxWithTheSameViolationScores.get(key) + "  percent: " + (double) ((int) key/ (double)instancesByCLA.numInstances())*100.0);
+			
+			// if ((double) ((int) key/ (double)instancesByCLA.numInstances())*100.0 >= inversePercent) {
+			//if (maxPer >= inversePercent) { 
+			//	additionalSelectedMetricIndices += metricIdxWithTheSameViolationScores.get(key);
+			//}
+		//}
+		
+		//System.out.println("instance num: " + instancesByCLA.numInstances()+","+keys[keys.length-1]+","+maxPer+","+keys[0]+","+minPer);
+		
+		Instances trainingInstancesByCLAMI = null;
+		
+		// (2) Generate instances for CLAMI. If there are no instances in the first round with the minimum violation scores,
+		//     then use the next minimum violation score. (Keys are ordered violation scores)
+		Instances newTestInstances = null;
+		for(Object key: keys){
+			if (inversePercent > 0) {
+				//String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1);
+				//System.out.println("metric idex1: " + selectedMetricIndices);
+				//if (minPer + maxPer >= inversePercent) { 
+				String	selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + metricIdxWithTheSameViolationScores.get((int)keys[keys.length-1]) + additionalSelectedMetricIndices + (instancesByCLA.classIndex() +1);
+				//}
+				//System.out.println("metric idex2: " + selectedMetricIndices);
+				
+//				System.out.println("This is [CLAMI+]. Allowed scope is " + inversePercent +"%" );
+				trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
+				newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
+				
+//				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
+						
+				// Instance selection
+//				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
+//				String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,metricIdxWithTheSameViolationScores.get(key),metricIdxWithTheSameViolationScores.get((int)keys[keys.length-1]), cutoffsForHigherValuesOfAttribute,positiveLabel);
+//				trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
+				
+//				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
+			}
+			
+			else {
+				String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1); // selectedMetricIndices는 key의 value, 즉, violation에 해당하는 attr들의 index를 갖고 + (class index+1)    ex) " 16, + 10 "
+				trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true); // trainingInstancesByCLAMI는 CLA로 예측한 label을 갖고 있는 것에서, selectedMetricIndices에 있는 attr index에 해당하는 attribute만 남긴 것.  
+				newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);  // 원래 dataset에서, selectedMetricIndices에 있는 attr index에 해당하는 attribute만 남긴 것. 
+						
+//				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
+				
+				// Instance selection
+//				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset   // metric selection하고 남은 dataset만을 가지고, 그것들의 cutoff에 해당하는 값을 저장. 
+//				String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,"","",cutoffsForHigherValuesOfAttribute,positiveLabel);  // violation을 가지고 있는 instance들의 index를 string으로 instIndicesNeedToRemove에 저장한다. (1,2,3이런 형식으로)
+//				trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);  // instance 제거하고 남은 dataset을 trainingInstancesByCLAMI에 저장한다. 
+				
+//				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
+				
+			}
+			if(trainingInstancesByCLAMI.numInstances() != 0)
+				break;
+		}
+		
+		// check if there are no instances in any one of two classes.
+		if(trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[0]!=0 &&
+				trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[1]!=0){
+		
+			try {
+				Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
+				classifier.buildClassifier(trainingInstancesByCLAMI);
+				
+				// Print CLAMI results
+				int TP=0, FP=0,TN=0, FN=0;
+				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
+					double[] probability = classifier.distributionForInstance(newTestInstances.get(instIdx));
+					
+//					for(int i = 0; i < probability.length; i++){
+//						System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(probability[i]));
+//					}
+					
+					double predictedLabelIdx = (probability[0] >= threshold)? 0.0: 1.0;
+					
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
@@ -254,10 +446,10 @@ public class Utils {
 				if (TP+TN+FP+FN>0){
 					printEvaluationResult(TP, TN, FP, FN, experimental);
 					// print AUC value
-					if(!experimental)
-						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-					else
-						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					if(!experimental)
+//						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					else
+//						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
@@ -314,23 +506,73 @@ public class Utils {
 		return metricIndicesWithTheSameViolationScores;
 	}
 
-	private static String getSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
+	private static String getSelectedInstances(Instances instances,String notInverseIndex, String inverseIndex, double[] cutoffsForHigherValuesOfAttribute,
 			String positiveLabel) {
+		//System.out.println("in getSelectedInstances not inverse: "+notInverseIndex + "  inverse: " + inverseIndex);
+		int numOfAttrforInverseViolation=0;
+		int numOfAttrforNOTInverseViolation=0;
+		for (int i=0;i<inverseIndex.length();i++) {
+			if (inverseIndex.charAt(i) == ',') {
+				numOfAttrforInverseViolation++;
+			}
+		}
+		for (int i=0;i<notInverseIndex.length();i++) {
+			if (notInverseIndex.charAt(i) == ',') {
+				numOfAttrforNOTInverseViolation++;
+			}
+		}
 		
 		int[] violations = new int[instances.numInstances()];
 		
-		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
-			
-			for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
-				if(attrIdx == instances.classIndex())
-					continue; // no need to compute violation score for the class attribute
+		// inverse 되는 violation이 없는 경우 
+		if (numOfAttrforInverseViolation == 0) {
+			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
 				
-				if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
-						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){
-						violations[instIdx]++;
-				}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
-						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){
-						violations[instIdx]++;
+				for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
+					if(attrIdx == instances.classIndex())
+						continue; // no need to compute violation score for the class attribute
+					
+					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff에 해당하는 값보다 작거나 같은데 (clean일 것)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){ // class label이 buggy인 경우,
+							violations[instIdx]++; // 해당 attribute의 violation 개수++
+					}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff에 해당하는 값보다 큰데 (buggy일 것)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){ // class label이 clean인 경우, 
+							violations[instIdx]++; // 해당 attribute의 violation 개수++ 
+					}
+				}
+			}
+		}
+		// inverse 되는 violation이 있는 경우 
+		else {
+			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+				
+				for(int attrIdx=0; attrIdx < numOfAttrforNOTInverseViolation; attrIdx++){
+					if(attrIdx == instances.classIndex())
+						continue; // no need to compute violation score for the class attribute
+					
+					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff에 해당하는 값보다 작거나 같은데 (clean일 것)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){ // class label이 buggy인 경우,
+							violations[instIdx]++; // 해당 attribute의 violation 개수++
+					}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff에 해당하는 값보다 큰데 (buggy일 것)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){ // class label이 clean인 경우, 
+							violations[instIdx]++; // 해당 attribute의 violation 개수++ 
+					}
+				}
+			}
+			// violation 반대인 애는 반대로 구하기 
+			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+				
+				for(int attrIdx=numOfAttrforNOTInverseViolation; attrIdx < instances.numAttributes(); attrIdx++){
+					if(attrIdx == instances.classIndex())
+						continue; // no need to compute violation score for the class attribute
+					
+					if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){
+							violations[instIdx]++;
+					}else if(instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){
+							violations[instIdx]++;
+					}
 				}
 			}
 		}
@@ -370,14 +612,18 @@ public class Utils {
 	 * Load Instances from arff file. Last attribute will be set as class attribute
 	 * @param path arff file path
 	 * @return Instances
+	 * @throws Exception 
 	 */
-	public static Instances loadArff(String path,String classAttributeName){
+	public static Instances loadArff(String path,String classAttributeName) throws Exception{
+		fileName = path;
 		Instances instances=null;
 		BufferedReader reader;
 		try {
 			reader = new BufferedReader(new FileReader(path));
-			instances = new Instances(reader);
-			reader.close();
+//			instances = new Instances(reader);
+			DataSource source = new DataSource(path);
+			instances = source.getDataSet();
+//			reader.close();
 			instances.setClassIndex(instances.attribute(classAttributeName).index());
 		} catch (NullPointerException e) {
 			System.err.println("Class label name, " + classAttributeName + ", does not exist! Please, check if the label name is correct.");
@@ -477,4 +723,5 @@ public class Utils {
 
 		return newInstances;
 	}
+	
 }

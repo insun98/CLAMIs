@@ -28,22 +28,24 @@ public class CLAMI {
 	String labelName;
 	String posLabelValue;
 	double percentileCutoff = 50;
+	double threshold = 0.5;
 	boolean forCLAMI = false;
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
 	String mlAlg="";
+	double inversePercent = 0;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		new CLAMI().runner(args);
 		
 	}
 
-	void runner(String[] args) {
+	void runner(String[] args) throws Exception {
 		
 		Options options = createOptions();
-		
+
 		if(parseOptions(options, args)){
 			if (help){
 				printHelp(options);
@@ -52,7 +54,12 @@ public class CLAMI {
 			
 			// exit when percentile range is not correct (it should be 0 < range <= 100)
 			if (percentileCutoff <=0 || 100 < percentileCutoff){
-				System.err.println("Cutoff percentile must be 0 < and <=100");
+				System.err.println("Cutoff percentile must be 0 < and <= 100");
+				return;
+			}
+			
+			if (threshold < 0.0 || 1.0 < threshold) {
+				System.err.println("threshold must be 0.0 <= and <= 1.0");
 				return;
 			}
 			
@@ -64,24 +71,71 @@ public class CLAMI {
 			}
 			
 			// load an arff file
-			Instances instances = Utils.loadArff(dataFilePath, labelName);
+			File dir = new File(dataFilePath);
 			
-			if (instances !=null){
-				double unit = (double) 100/(instances.numInstances());
-				//double unitFloor = Math.floor(unit);
-				double unitCeil = Math.ceil(unit);
+			
+			if (dir.isDirectory()) {
+				// 만약 입력받은 dataFilePath의 끝이 .arff 형식이면 바로 loadArff()로 넘기고, 아니면 하나씩 뽑아서 넣기..
 				
-				// TODO need to check how median is computed
-				if (unit >= 1 && 100-unitCeil < percentileCutoff){
-					System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
-					return;
+				File [] fileList = dir.listFiles();		
+				
+				for (File file: fileList) {
+					if (file.isFile()) {
+//						System.out.println(i++);
+//						System.out.print("file: " + file);
+						
+//						if (file.toString().endsWith(".arff") ) {
+//							System.out.println("end with"+file.toString().split(file.toString(), file.toString().indexOf(".arff"))); // .indexOf(file.toString(), file.toString().indexOf(".arff")));
+//						}
+					}
+					
+					// load an arff file
+					Instances instances = Utils.loadArff(file.toString(), labelName);
+					
+					if (instances !=null){
+						double unit = (double) 100/(instances.numInstances());
+						//double unitFloor = Math.floor(unit);
+						double unitCeil = Math.ceil(unit);
+						
+						// TODO need to check how median is computed
+						if (unit >= 1 && 100-unitCeil < percentileCutoff){
+							System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+							return;
+						}
+						
+						if (experimental==null || experimental.equals("")){
+							// do prediction
+							prediction(instances,posLabelValue,false);
+						}else{
+							experiment(instances,posLabelValue);
+						}
+					}
 				}
 				
-				if (experimental==null || experimental.equals("")){
-					// do prediction
-					prediction(instances,posLabelValue,false);
-				}else{
-					experiment(instances,posLabelValue);
+				
+			}
+			
+			if (!dir.isDirectory()) {
+				// load an arff file
+				Instances instances = Utils.loadArff(dataFilePath, labelName);
+				
+				if (instances !=null){
+					double unit = (double) 100/(instances.numInstances());
+					//double unitFloor = Math.floor(unit);
+					double unitCeil = Math.ceil(unit);
+					
+					// TODO need to check how median is computed
+					if (unit >= 1 && 100-unitCeil < percentileCutoff){
+						System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+						return;
+					}
+					
+					if (experimental==null || experimental.equals("")){
+						// do prediction
+						prediction(instances,posLabelValue,false);
+					}else{
+						experiment(instances,posLabelValue);
+					}
 				}
 			}
 		}
@@ -119,10 +173,15 @@ public class CLAMI {
 	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
 		
 		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental);
-		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg);
-			
+			Utils.getCLAResult(instances, percentileCutoff,threshold, positiveLabel,suppress,isExperimental);
+		else {
+			if (this.inversePercent>0) {
+				Utils.getCLAMIResult2(instances,instances,positiveLabel,percentileCutoff, threshold, suppress,isExperimental,mlAlg, this.inversePercent);
+			}
+			else {
+				Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff, threshold, suppress,isExperimental,mlAlg);
+			}
+		}
 			
 	}
 
@@ -155,6 +214,12 @@ public class CLAMI {
 		        .desc("Cutoff percentile for higher values. Default is median (50).")
 		        .hasArg()
 		        .argName("cutoff percentile")
+		        .build());
+		
+		options.addOption(Option.builder("t").longOpt("threshold")
+		        .desc("Threshold for probability. Default is median (0.5).")
+		        .hasArg()
+		        .argName("threshold")
 		        .build());
 		
 		options.addOption(Option.builder("s").longOpt("suppress")
@@ -195,6 +260,12 @@ public class CLAMI {
 		        .hasArg()
 		        .argName("Fully qualalified weka classifier name")
 		        .build());
+		
+		options.addOption(Option.builder("i").longOpt("inverse")
+				.desc("Allowed percent of violation (should be more than 50%) use only in CLAMI")
+				.hasArg()
+				.argName("percent")
+				.build());
 
 		return options;
 
@@ -213,11 +284,15 @@ public class CLAMI {
 			posLabelValue = cmd.getOptionValue("p");
 			if(cmd.getOptionValue("c") != null)
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
+			if(cmd.getOptionValue("t") != null)
+				threshold = Double.parseDouble(cmd.getOptionValue("t"));
 			forCLAMI = cmd.hasOption("m");
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
+			if(cmd.getOptionValue("i") != null)
+				inversePercent = Double.parseDouble(cmd.getOptionValue("i"));
 
 		} catch (Exception e) {
 			printHelp(options);
