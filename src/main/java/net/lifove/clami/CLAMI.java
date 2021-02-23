@@ -33,6 +33,9 @@ public class CLAMI {
 	boolean suppress = false;
 	String experimental;
 	String mlAlg="";
+//	boolean isDirectory = false;
+	double threshold = 0.5;
+	
 
 	public static void main(String[] args) {
 		
@@ -56,6 +59,11 @@ public class CLAMI {
 				return;
 			}
 			
+			if (threshold < 0.0 || 1.0 < threshold) {
+	            System.err.println("threshold must be 0.0 <= and <= 1.0");
+	            return;
+	         }
+			
 			// exit experimental option format is not correct
 			if(experimental!=null && !checkExperimentalOption(experimental)){
 				System.err.println("Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
@@ -63,7 +71,7 @@ public class CLAMI {
 				return;
 			}
 			
-File dir = new File(dataFilePath);
+			File dir = new File(dataFilePath);
 			
 			int i=0;
 			if (dir.isDirectory()) {
@@ -73,7 +81,7 @@ File dir = new File(dataFilePath);
 				
 				for (File file: fileList) {
 					if (file.isFile()) {
-						System.out.println(i++);
+//						System.out.println(i++);
 //						System.out.print("file: " + file);
 						
 //						if (file.toString().endsWith(".arff") ) {
@@ -130,6 +138,7 @@ File dir = new File(dataFilePath);
 					}
 				}
 			}
+			
 		}
 	}
 	
@@ -165,9 +174,9 @@ File dir = new File(dataFilePath);
 	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
 		
 		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental);
+			Utils.getCLAResult(instances, percentileCutoff,threshold,positiveLabel,suppress,isExperimental);
 		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg);
+			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,threshold,suppress,isExperimental,mlAlg);
 			
 			
 	}
@@ -241,6 +250,16 @@ File dir = new File(dataFilePath);
 		        .hasArg()
 		        .argName("Fully qualalified weka classifier name")
 		        .build());
+		
+//		options.addOption(Option.builder("d").longOpt("directory")
+//				.desc("excute every files under the Arff file path directory ")
+//				.build());
+		
+		options.addOption(Option.builder("t").longOpt("threshold")
+	              .desc("Threshold for probability. Default is median (0.5).")
+	              .hasArg()
+	              .argName("threshold")
+	              .build());
 
 		return options;
 
@@ -264,6 +283,9 @@ File dir = new File(dataFilePath);
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
+//			isDirectory = cmd.hasOption("d");
+			if(cmd.getOptionValue("t") != null)
+	            threshold = Double.parseDouble(cmd.getOptionValue("t"));
 
 		} catch (Exception e) {
 			printHelp(options);
