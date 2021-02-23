@@ -28,6 +28,7 @@ public class CLAMI {
 	String labelName;
 	String posLabelValue;
 	double percentileCutoff = 50;
+	double percentileOk = 100.0;
 	boolean forCLAMI = false;
 	boolean help = false;
 	boolean suppress = false;
@@ -53,6 +54,12 @@ public class CLAMI {
 			// exit when percentile range is not correct (it should be 0 < range <= 100)
 			if (percentileCutoff <=0 || 100 < percentileCutoff){
 				System.err.println("Cutoff percentile must be 0 < and <=100");
+				return;
+			}
+			
+			// ��Ī ��� ���� (it should be 0 < range <= 100)
+			if (percentileOk <=0 || 100 < percentileOk){
+				System.err.println("��Ī percentile must be 0 < and <=100");
 				return;
 			}
 			
