@@ -63,25 +63,71 @@ public class CLAMI {
 				return;
 			}
 			
-			// load an arff file
-			Instances instances = Utils.loadArff(dataFilePath, labelName);
+File dir = new File(dataFilePath);
 			
-			if (instances !=null){
-				double unit = (double) 100/(instances.numInstances());
-				//double unitFloor = Math.floor(unit);
-				double unitCeil = Math.ceil(unit);
+			int i=0;
+			if (dir.isDirectory()) {
+				// 만약 입력받은 dataFilePath의 끝이 .arff 형식이면 바로 loadArff()로 넘기고, 아니면 하나씩 뽑아서 넣기..
 				
-				// TODO need to check how median is computed
-				if (unit >= 1 && 100-unitCeil < percentileCutoff){
-					System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
-					return;
+				File [] fileList = dir.listFiles();		
+				
+				for (File file: fileList) {
+					if (file.isFile()) {
+						System.out.println(i++);
+//						System.out.print("file: " + file);
+						
+//						if (file.toString().endsWith(".arff") ) {
+//							System.out.println("end with"+file.toString().split(file.toString(), file.toString().indexOf(".arff"))); // .indexOf(file.toString(), file.toString().indexOf(".arff")));
+//						}
+					}
+					
+					// load an arff file
+					Instances instances = Utils.loadArff(file.toString(), labelName);
+					
+					if (instances !=null){
+						double unit = (double) 100/(instances.numInstances());
+						//double unitFloor = Math.floor(unit);
+						double unitCeil = Math.ceil(unit);
+						
+						// TODO need to check how median is computed
+						if (unit >= 1 && 100-unitCeil < percentileCutoff){
+							System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+							return;
+						}
+						
+						if (experimental==null || experimental.equals("")){
+							// do prediction
+							prediction(instances,posLabelValue,false);
+						}else{
+							experiment(instances,posLabelValue);
+						}
+					}
 				}
 				
-				if (experimental==null || experimental.equals("")){
-					// do prediction
-					prediction(instances,posLabelValue,false);
-				}else{
-					experiment(instances,posLabelValue);
+				
+			}
+			
+			if (!dir.isDirectory()) {
+				// load an arff file
+				Instances instances = Utils.loadArff(dataFilePath, labelName);
+				
+				if (instances !=null){
+					double unit = (double) 100/(instances.numInstances());
+					//double unitFloor = Math.floor(unit);
+					double unitCeil = Math.ceil(unit);
+					
+					// TODO need to check how median is computed
+					if (unit >= 1 && 100-unitCeil < percentileCutoff){
+						System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+						return;
+					}
+					
+					if (experimental==null || experimental.equals("")){
+						// do prediction
+						prediction(instances,posLabelValue,false);
+					}else{
+						experiment(instances,posLabelValue);
+					}
 				}
 			}
 		}
