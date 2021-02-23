@@ -120,111 +120,7 @@ public class Utils {
 			System.out.print(precision + "," + recall + "," + f1);
 		}
 		
-		writeCSV(tP, tN, fP, fN, precision, recall, f1, experimental);
 	}
-
-	private static void writeCSV(int tP, int tN, int fP, int fN, double precision, double recall, double f1, boolean experimental) {		
-		
-		//출력 스트림 생성
-        BufferedWriter bufWriter = null;
-        try{
-            bufWriter = Files.newBufferedWriter(Paths.get("C:\\Users\\park_\\git\\CLAMI_BI\\CLAMI_v2\\clami_result.csv"),Charset.forName("UTF-8"));
-            
-            //csv파일 읽기
-            List<List<String>> allData = readCSV();
-            
-            for(List<String> newLine : allData){
-                List<String> list = newLine;
-                for(String data : list){
-                    bufWriter.write(data);
-                    bufWriter.write(",");
-                }
-                //추가하기
-//                bufWriter.write("주소"); // 줄 끝에 추가
-                //개행코드추가
-                bufWriter.newLine();
-            }
-          //추가하기
-            if(!experimental){
-            	bufWriter.write(fileName);
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(tP));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(fP));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(tN));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(fN));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(precision));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(recall));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(f1));
-    		}else{
-    			bufWriter.write(",");
-    			bufWriter.write(",");
-    			bufWriter.write(",");
-    			bufWriter.write(",");
-    			bufWriter.write(",");
-    			bufWriter.write(String.valueOf(precision));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(recall));
-                bufWriter.write(",");
-                bufWriter.write(String.valueOf(f1));
-    		}
-            
-        }catch(FileNotFoundException e){
-            e.printStackTrace();
-        }catch(IOException e){
-            e.printStackTrace();
-        }finally{
-            try{
-                if(bufWriter != null){
-                    bufWriter.close();
-                }
-            }catch(IOException e){
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public static List<List<String>> readCSV(){
-        //반환용 리스트
-        List<List<String>> ret = new ArrayList<List<String>>();
-        BufferedReader br = null;
-        File csv = new File("clami_result.csv");
-        String line = "";
-        
-        try{
-        	br = new BufferedReader(new FileReader(csv));
-            //Charset.forName("UTF-8");
-            
-            while((line = br.readLine()) != null){
-                //CSV 1행을 저장하는 리스트
-            	System.out.println(line);
-                List<String> tmpList = new ArrayList<String>();
-                String array[] = line.split(",");
-                //배열에서 리스트 반환
-                tmpList = Arrays.asList(array);
-                System.out.println(tmpList);
-                ret.add(tmpList);
-            }
-        }catch(FileNotFoundException e){
-            e.printStackTrace();
-        }catch(IOException e){
-            e.printStackTrace();
-        }finally{
-            try{
-                if(br != null){
-                    br.close();
-                }
-            }catch(IOException e){
-                e.printStackTrace();
-            }
-        }
-        return ret;
-    }
 
 	/**
 	 * Get instances labeled by CLA
@@ -470,18 +366,18 @@ public class Utils {
 				//}
 				//System.out.println("metric idex2: " + selectedMetricIndices);
 				
-				System.out.println("This is [CLAMI+]. Allowed scope is " + inversePercent +"%" );
+//				System.out.println("This is [CLAMI+]. Allowed scope is " + inversePercent +"%" );
 				trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
 				newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
 				
-				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
+//				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
 						
 				// Instance selection
 				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
 				String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,metricIdxWithTheSameViolationScores.get(key),metricIdxWithTheSameViolationScores.get((int)keys[keys.length-1]), cutoffsForHigherValuesOfAttribute,positiveLabel);
 				trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
 				
-				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
+//				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
 			}
 			
 			else {
@@ -489,14 +385,14 @@ public class Utils {
 				trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true); // trainingInstancesByCLAMI는 CLA로 예측한 label을 갖고 있는 것에서, selectedMetricIndices에 있는 attr index에 해당하는 attribute만 남긴 것.  
 				newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);  // 원래 dataset에서, selectedMetricIndices에 있는 attr index에 해당하는 attribute만 남긴 것. 
 						
-				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
+//				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
 				
 				// Instance selection
 				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset   // metric selection하고 남은 dataset만을 가지고, 그것들의 cutoff에 해당하는 값을 저장. 
 				String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,"","",cutoffsForHigherValuesOfAttribute,positiveLabel);  // violation을 가지고 있는 instance들의 index를 string으로 instIndicesNeedToRemove에 저장한다. (1,2,3이런 형식으로)
 				trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);  // instance 제거하고 남은 dataset을 trainingInstancesByCLAMI에 저장한다. 
 				
-				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
+//				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
 				
 			}
 			if(trainingInstancesByCLAMI.numInstances() != 0)
@@ -549,10 +445,10 @@ public class Utils {
 				if (TP+TN+FP+FN>0){
 					printEvaluationResult(TP, TN, FP, FN, experimental);
 					// print AUC value
-					if(!experimental)
-						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-					else
-						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					if(!experimental)
+//						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					else
+//						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
