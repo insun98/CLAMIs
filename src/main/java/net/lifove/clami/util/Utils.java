@@ -24,6 +24,7 @@ import weka.filters.unsupervised.instance.RemoveRange;
 
 public class Utils {
 	
+	static String fileName;
 	
 	/**
 	 * Get CLA result
@@ -33,20 +34,21 @@ public class Utils {
 	 * @param suppress detailed prediction results
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress) {
-		getCLAResult(instances,percentileCutoff,positiveLabel,suppress,false); // no experimental as default
+	public static void getCLAResult(Instances instances,double percentileCutoff,double threshold,String positiveLabel,boolean suppress) {
+		getCLAResult(instances,percentileCutoff,threshold,positiveLabel,suppress,false); // no experimental as default
 	}
 	
 	/**
 	 * Get CLA result
 	 * @param instances
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param threshold 
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
 	 * @param experimental option to display a result in a line;
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress,boolean experimental) {
+	public static void getCLAResult(Instances instances,double percentileCutoff,double threshold, String positiveLabel,boolean suppress,boolean experimental) {
 		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
 		// Print CLA results
@@ -92,17 +94,23 @@ public class Utils {
 		double f1 = (2*(precision*recall))/(precision+recall);
 		
 		if(!experimental){
-			System.out.println("TP: " + tP);
-			System.out.println("FP: " + fP);
-			System.out.println("TN: " + tN);
-			System.out.println("FN: " + fN);
-			
-			System.out.println("Precision: " + precision);
-			System.out.println("Recall: " + recall);
-			System.out.println("F1: " + f1);
-		}else{
-			System.out.print(precision + "," + recall + "," + f1);
-		}
+			String[] array = fileName.split("/");
+	         fileName = array[array.length-1];
+	         
+	         System.out.print(fileName+","+tP + "," + fP + ","+tN+","+fN + ","+precision+","+recall+","+f1+",");
+//	         System.out.println("TP: " + tP);
+//	         System.out.println("FP: " + fP);
+//	         System.out.println("TN: " + tN);
+//	         System.out.println("FN: " + fN);
+//	         
+//	         System.out.println("Precision: " + precision);
+//	         System.out.println("Recall: " + recall);
+//	         System.out.println("F1: " + f1);
+//	         System.out.println(fileName);
+//	         System.out.println();
+		} else{
+	         System.out.print(precision + "," + recall + "," + f1);
+	    }
 	}
 
 	/**
@@ -160,13 +168,25 @@ public class Utils {
 		//System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
 		Instances instancesByCLA = new Instances(instances);
-		
+				
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
+
+//			System.out.println(" positive: " + instances.attribute(instances.classIndex()).indexOfValue(positiveLabel));
+//			System.out.println(" label: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
+//			System.out.println(" v1 prediction: " + v1_predictioned_label.get(instIdx));
+//			if ((instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) == (v1_predictioned_label.get(instIdx))) {
+//				System.out.println("yes!!!!");
+//			}
+			
 			if(v1_predictioned_label.get(instIdx) != v2_predictioned_label.get(instIdx)) {
 				if(v1.get(instIdx) < v2.get(instIdx)) {
-					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) {
+					// negative에 들어오는 애들은 clean인데 buggy로 예측되어서, clean으로 바꾸어줌 
+					if (instances.attribute(instances.classIndex()).indexOfValue(positiveLabel) == (v1_predictioned_label.get(instIdx))) {
+//					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) { // ***** 
 						instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
-					} else {
+					} 
+					// buggy인데 clean으로 예측, buggy로 바꾸어줌. 
+					else {
 						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 					}
 				}	
@@ -200,8 +220,8 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,double threshold,boolean suppress,String mlAlg) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,threshold,suppress,false,mlAlg); //no experimental as default
 	}
 	
 	/**
@@ -209,9 +229,10 @@ public class Utils {
 	 * @param testInstances
 	 * @param instancesByCLA
 	 * @param positiveLabel
+	 * @param threshold 
 	 */
 	@SuppressWarnings("null")
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, double threshold, boolean suppress, boolean experimental, String mlAlg) {
 		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
@@ -244,7 +265,7 @@ public class Utils {
 		for(Object key: keys){
 			
 			String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1);
-			System.out.println("\nselected: " + selectedMetricIndices + "\n");
+//			System.out.println("\nselected: " + selectedMetricIndices + "\n");
 			trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
 			newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
 					
@@ -288,8 +309,8 @@ public class Utils {
 				// Print CLAMI results
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
 					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
-					v1_predictedLabelIdx.add(classifier.classifyInstance(newTestInstances.get(instIdx)));
-					
+		            v1_predictedLabelIdx.add(classifier.classifyInstance(newTestInstances.get(instIdx)));
+		            
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
@@ -302,7 +323,7 @@ public class Utils {
 					double max = prediction[0];
 //					System.out.println("max: " + max);
 					for(int i = 0; i < prediction.length; i++){
-						System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(prediction[i]));
+//						System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(prediction[i]));
 						if(max < prediction[i]) max = prediction[i];
 					}
 					
@@ -336,12 +357,12 @@ public class Utils {
 //				}
 				
 				if (v1_TP+v1_TN+v1_FP+v1_FN>0){
-					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
+//					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
 					// print AUC value
-					if(!experimental)
-						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-					else
-						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					if(!experimental)
+//						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//					else
+//						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
@@ -361,7 +382,7 @@ public class Utils {
 			if (Integer.parseInt(descending_key.toString()) >= 0) { //Integer.parseInt(inverse_key.toString())
 										
 				String inverse_selectedMetricIndices = metricIdxWithTheSameViolationScores.get(descending_key) + (instancesByCLA.classIndex() +1);
-				System.out.println("\nselected: " + inverse_selectedMetricIndices);	
+//				System.out.println("\nselected: " + inverse_selectedMetricIndices);	
 				
 				inverse_trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,inverse_selectedMetricIndices,true);
 				inverse_newTestInstances =	getInstancesByRemovingSpecificAttributes(testInstances,inverse_selectedMetricIndices,true);
@@ -411,12 +432,12 @@ public class Utils {
 					
 					// Print CLAMI results
 					
-					System.out.println();
+//					System.out.println();
 					
 					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
 						double inverse_predictedLabelIdx = inverse_classifier.classifyInstance(inverse_newTestInstances.get(instIdx));
-						v2_inverse_predictedLabelIdx.add(inverse_predictedLabelIdx);
-						
+		                v2_inverse_predictedLabelIdx.add(inverse_predictedLabelIdx);
+					
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 									inverse_newTestInstances.classAttribute().value((int)inverse_predictedLabelIdx)	+
@@ -472,13 +493,13 @@ public class Utils {
 //					}
 					
 					if (v2_TP+v2_TN+v2_FP+v2_FN>0){
-						printEvaluationResult(v2_TP, v2_TN, v2_FP, v2_FN, experimental);
-						System.out.println("TP + TN: " + (v2_TP + v2_TN));
+//						printEvaluationResult(v2_TP, v2_TN, v2_FP, v2_FN, experimental);
+//						System.out.println("TP + TN: " + (v2_TP + v2_TN));
 						// print AUC value
-						if(!experimental)
-							System.out.println("AUC: " + inverse_eval.areaUnderROC(inverse_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-						else
-							System.out.print("," + inverse_eval.areaUnderROC(inverse_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//						if(!experimental)
+//							System.out.println("AUC: " + inverse_eval.areaUnderROC(inverse_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+//						else
+//							System.out.print("," + inverse_eval.areaUnderROC(inverse_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 					}
 					else if(suppress)
 						System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
@@ -503,7 +524,8 @@ public class Utils {
 //			System.out.println();
 //		}
 		
-		Instances labeling = getLabeling(final_newTestInstances, v1_predictedLabelIdx, v2_inverse_predictedLabelIdx, v1, v2, positiveLabel); // CLA�� �󺧸� �� set
+		//final_newTestInstances: CLA / v1_predictedLabelIdx: CLAMI / v2_inverse_predictedLabelIdx: CLAMI_MAX(MVS)
+		Instances labeling = getLabeling(final_newTestInstances, v1_predictedLabelIdx, v2_inverse_predictedLabelIdx, v1, v2, positiveLabel); // CLA�� �󺧸� �� set
 		
 		
 //		System.out.println("after final");
@@ -528,16 +550,14 @@ public class Utils {
 					
 					// Print CLAMI results
 					
-					System.out.println();
-					
 					for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
-//						double final_predictedLabelIdx = final_classifier.classifyInstance(final_newTestInstances.get(instIdx));
-						double final_predictedLabelIdx = v1_predictedLabelIdx.get(instIdx);
-						if (!(v1_predictedLabelIdx.get(instIdx).equals(v2_inverse_predictedLabelIdx.get(instIdx)))) {
-							if (v1.get(instIdx) < v2.get(instIdx)) {
-								final_predictedLabelIdx = v2_inverse_predictedLabelIdx.get(instIdx);
-							}
-						}
+						double final_predictedLabelIdx = final_classifier.classifyInstance(final_newTestInstances.get(instIdx));
+//						double final_predictedLabelIdx = labeling.get(instIdx).value(labeling.classIndex());
+//						if (!(v1_predictedLabelIdx.get(instIdx).equals(v2_inverse_predictedLabelIdx.get(instIdx)))) {
+//							if (v1.get(instIdx) < v2.get(instIdx)) {
+//								final_predictedLabelIdx = v2_inverse_predictedLabelIdx.get(instIdx);
+//							}
+//						}
 						
 //						System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
 						
@@ -564,20 +584,20 @@ public class Utils {
 							if(final_predictedLabelIdx==instances.get(instIdx).classValue()){
 								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									TP++;
-									System.out.println("TP");
+//									System.out.println("TP");
 								}
 								else {
 									TN++;
-									System.out.println("TN");
+//									System.out.println("TN");
 								}
 							}else{
 								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									FP++;
-									System.out.println("FP");
+//									System.out.println("FP");
 								}
 								else {
 									FN++;
-									System.out.println("FN");
+//									System.out.println("FN");
 								}
 							}
 						}
@@ -588,7 +608,7 @@ public class Utils {
 					
 					if (TP+TN+FP+FN>0){
 						printEvaluationResult(TP, TN, FP, FN, experimental);
-						System.out.println("TP + TN: " + (TP + TN));
+//						System.out.println("TP + TN: " + (TP + TN));
 						// print AUC value
 						if(!experimental)
 							System.out.println("AUC: " + final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
@@ -711,6 +731,8 @@ public class Utils {
 	 * @return Instances
 	 */
 	public static Instances loadArff(String path,String classAttributeName){
+		fileName = path;
+		
 		Instances instances=null;
 		BufferedReader reader;
 		try {
