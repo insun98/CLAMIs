@@ -83,7 +83,7 @@ public class Utils {
 		}
 		
 		if (TP+TN+FP+FN>0)
-			printEvaluationResult(TP, TN, FP, FN, experimental);
+			printEvaluationResult(TP, TN, FP, FN, experimental,0.0);
 		else if(suppress)
 			System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 	}
@@ -95,7 +95,7 @@ public class Utils {
 	 * @param fP
 	 * @param fN
 	 */
-	private static void printEvaluationResult(int tP, int tN, int fP, int fN, boolean experimental) {
+	private static void printEvaluationResult(int tP, int tN, int fP, int fN, boolean experimental,double AUC) {
 		
 		double precision = (double)tP/(tP+fP);
 		double recall = (double)tP/(tP+fN);
@@ -105,7 +105,7 @@ public class Utils {
 			String[] array = fileName.split("/");
 			fileName = array[array.length-1];
 			
-			System.out.print(fileName+","+tP + "," + fP + ","+tN+","+fN + ","+precision+","+recall+","+f1+",");
+			System.out.print(fileName+","+tP + "," + fP + ","+tN+","+fN + ","+precision+","+recall+","+f1+","+AUC);
 //			System.out.println("TP: " + tP);
 //			System.out.println("FP: " + fP);
 //			System.out.println("TN: " + tN);
@@ -281,7 +281,7 @@ public class Utils {
 				eval.evaluateModel(classifier, newTestInstances);
 				
 				if (TP+TN+FP+FN>0){
-					printEvaluationResult(TP, TN, FP, FN, experimental);
+					printEvaluationResult(TP, TN, FP, FN, experimental,eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 					// print AUC value
 //					if(!experimental)
 //						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
@@ -381,16 +381,16 @@ public class Utils {
 			}
 			
 			else {
-				String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1); // selectedMetricIndices´Â keyÀÇ value, Áï, violation¿¡ ÇØ´çÇÏ´Â attrµéÀÇ index¸¦ °®°í + (class index+1)    ex) " 16, + 10 "
-				trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true); // trainingInstancesByCLAMI´Â CLA·Î ¿¹ÃøÇÑ labelÀ» °®°í ÀÖ´Â °Í¿¡¼­, selectedMetricIndices¿¡ ÀÖ´Â attr index¿¡ ÇØ´çÇÏ´Â attribute¸¸ ³²±ä °Í.  
-				newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);  // ¿ø·¡ dataset¿¡¼­, selectedMetricIndices¿¡ ÀÖ´Â attr index¿¡ ÇØ´çÇÏ´Â attribute¸¸ ³²±ä °Í. 
+				String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1); // selectedMetricIndicesï¿½ï¿½ keyï¿½ï¿½ value, ï¿½ï¿½, violationï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ attrï¿½ï¿½ï¿½ï¿½ indexï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ + (class index+1)    ex) " 16, + 10 "
+				trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true); // trainingInstancesByCLAMIï¿½ï¿½ CLAï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ labelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½Í¿ï¿½ï¿½ï¿½, selectedMetricIndicesï¿½ï¿½ ï¿½Ö´ï¿½ attr indexï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ attributeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½.  
+				newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);  // ï¿½ï¿½ï¿½ï¿½ datasetï¿½ï¿½ï¿½ï¿½, selectedMetricIndicesï¿½ï¿½ ï¿½Ö´ï¿½ attr indexï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ attributeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½. 
 						
 //				System.out.println("number of instances before instance selection: "+ trainingInstancesByCLAMI.numInstances());
 				
 				// Instance selection
-				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset   // metric selectionÇÏ°í ³²Àº dataset¸¸À» °¡Áö°í, ±×°ÍµéÀÇ cutoff¿¡ ÇØ´çÇÏ´Â °ªÀ» ÀúÀå. 
-				String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,"","",cutoffsForHigherValuesOfAttribute,positiveLabel);  // violationÀ» °¡Áö°í ÀÖ´Â instanceµéÀÇ index¸¦ stringÀ¸·Î instIndicesNeedToRemove¿¡ ÀúÀåÇÑ´Ù. (1,2,3ÀÌ·± Çü½ÄÀ¸·Î)
-				trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);  // instance Á¦°ÅÇÏ°í ³²Àº datasetÀ» trainingInstancesByCLAMI¿¡ ÀúÀåÇÑ´Ù. 
+				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset   // metric selectionï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ datasetï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½×°Íµï¿½ï¿½ï¿½ cutoffï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. 
+				String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,"","",cutoffsForHigherValuesOfAttribute,positiveLabel);  // violationï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ instanceï¿½ï¿½ï¿½ï¿½ indexï¿½ï¿½ stringï¿½ï¿½ï¿½ï¿½ instIndicesNeedToRemoveï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. (1,2,3ï¿½Ì·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+				trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);  // instance ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ datasetï¿½ï¿½ trainingInstancesByCLAMIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. 
 				
 //				System.out.println("number of instances after instance selection: "+ trainingInstancesByCLAMI.numInstances());
 				
@@ -443,7 +443,7 @@ public class Utils {
 				eval.evaluateModel(classifier, newTestInstances);
 				
 				if (TP+TN+FP+FN>0){
-					printEvaluationResult(TP, TN, FP, FN, experimental);
+					printEvaluationResult(TP, TN, FP, FN, experimental,eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 					// print AUC value
 //					if(!experimental)
 //						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
@@ -523,7 +523,7 @@ public class Utils {
 		
 		int[] violations = new int[instances.numInstances()];
 		
-		// inverse µÇ´Â violationÀÌ ¾ø´Â °æ¿ì 
+		// inverse ï¿½Ç´ï¿½ violationï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ 
 		if (numOfAttrforInverseViolation == 0) {
 			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
 				
@@ -531,17 +531,17 @@ public class Utils {
 					if(attrIdx == instances.classIndex())
 						continue; // no need to compute violation score for the class attribute
 					
-					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff¿¡ ÇØ´çÇÏ´Â °ªº¸´Ù ÀÛ°Å³ª °°Àºµ¥ (cleanÀÏ °Í)
-							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){ // class labelÀÌ buggyÀÎ °æ¿ì,
-							violations[instIdx]++; // ÇØ´ç attributeÀÇ violation °³¼ö++
-					}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff¿¡ ÇØ´çÇÏ´Â °ªº¸´Ù Å«µ¥ (buggyÀÏ °Í)
-							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){ // class labelÀÌ cleanÀÎ °æ¿ì, 
-							violations[instIdx]++; // ÇØ´ç attributeÀÇ violation °³¼ö++ 
+					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] // cutoffï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (cleanï¿½ï¿½ ï¿½ï¿½)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){ // class labelï¿½ï¿½ buggyï¿½ï¿½ ï¿½ï¿½ï¿½,
+							violations[instIdx]++; // ï¿½Ø´ï¿½ attributeï¿½ï¿½ violation ï¿½ï¿½ï¿½ï¿½++
+					}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] // cutoffï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å«ï¿½ï¿½ (buggyï¿½ï¿½ ï¿½ï¿½)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){ // class labelï¿½ï¿½ cleanï¿½ï¿½ ï¿½ï¿½ï¿½, 
+							violations[instIdx]++; // ï¿½Ø´ï¿½ attributeï¿½ï¿½ violation ï¿½ï¿½ï¿½ï¿½++ 
 					}
 				}
 			}
 		}
-		// inverse µÇ´Â violationÀÌ ÀÖ´Â °æ¿ì 
+		// inverse ï¿½Ç´ï¿½ violationï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ 
 		else {
 			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
 				
@@ -549,16 +549,16 @@ public class Utils {
 					if(attrIdx == instances.classIndex())
 						continue; // no need to compute violation score for the class attribute
 					
-					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff¿¡ ÇØ´çÇÏ´Â °ªº¸´Ù ÀÛ°Å³ª °°Àºµ¥ (cleanÀÏ °Í)
-							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){ // class labelÀÌ buggyÀÎ °æ¿ì,
-							violations[instIdx]++; // ÇØ´ç attributeÀÇ violation °³¼ö++
-					}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] // cutoff¿¡ ÇØ´çÇÏ´Â °ªº¸´Ù Å«µ¥ (buggyÀÏ °Í)
-							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){ // class labelÀÌ cleanÀÎ °æ¿ì, 
-							violations[instIdx]++; // ÇØ´ç attributeÀÇ violation °³¼ö++ 
+					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] // cutoffï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (cleanï¿½ï¿½ ï¿½ï¿½)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){ // class labelï¿½ï¿½ buggyï¿½ï¿½ ï¿½ï¿½ï¿½,
+							violations[instIdx]++; // ï¿½Ø´ï¿½ attributeï¿½ï¿½ violation ï¿½ï¿½ï¿½ï¿½++
+					}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] // cutoffï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å«ï¿½ï¿½ (buggyï¿½ï¿½ ï¿½ï¿½)
+							&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){ // class labelï¿½ï¿½ cleanï¿½ï¿½ ï¿½ï¿½ï¿½, 
+							violations[instIdx]++; // ï¿½Ø´ï¿½ attributeï¿½ï¿½ violation ï¿½ï¿½ï¿½ï¿½++ 
 					}
 				}
 			}
-			// violation ¹Ý´ëÀÎ ¾Ö´Â ¹Ý´ë·Î ±¸ÇÏ±â 
+			// violation ï¿½Ý´ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½Ý´ï¿½ï¿½ ï¿½ï¿½ï¿½Ï±ï¿½ 
 			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
 				
 				for(int attrIdx=numOfAttrforNOTInverseViolation; attrIdx < instances.numAttributes(); attrIdx++){
