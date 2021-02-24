@@ -57,9 +57,9 @@ public class CLAMI {
 				return;
 			}
 			
-			// ï¿½ï¿½Äª ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (it should be 0 < range <= 100)
+			// ´ëÄª Çã¿ë ¹üÀ§ (it should be 0 < range <= 100)
 			if (percentileOk <=0 || 100 < percentileOk){
-				System.err.println("ï¿½ï¿½Äª percentile must be 0 < and <=100");
+				System.err.println("´ëÄª percentile must be 0 < and <=100");
 				return;
 			}
 			

@@ -151,23 +151,26 @@ public class Utils {
 	 * final labeling for probability of class
 	 * labeling for testset1
 	 * @param instances
+	 * @param positiveLabel 
 	 * @param positiveLabel
 	 * @return
 	 */
-	private static Instances getLabeling(Instances instances, String positiveLabel, List<Double> v1, List<Double> v2) {
+	private static Instances getLabeling(Instances instances, List<Double> v1_predictioned_label, List<Double> v2_predictioned_label, List<Double> v1, List<Double> v2, String positiveLabel) {
 		
 		//System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
 		Instances instancesByCLA = new Instances(instances);
 		
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			if(v1.get(instIdx) < v2.get(instIdx)) {
-				if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) {
-					instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
-				} else {
-					instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
-				}
-			}	
+			if(v1_predictioned_label.get(instIdx) != v2_predictioned_label.get(instIdx)) {
+				if(v1.get(instIdx) < v2.get(instIdx)) {
+					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) {
+						instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
+					} else {
+						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
+					}
+				}	
+			}
 		}
 		return instancesByCLA;
 	}
@@ -272,6 +275,7 @@ public class Utils {
 		int v1_TP=0, v1_FP=0, v1_TN=0, v1_FN=0;
 		double[] prediction;
 		List<Double> v1 = new ArrayList<Double>();
+		List<Double> v1_predictedLabelIdx = new ArrayList<Double>();
 		
 		// check if there are no instances in any one of two classes.
 		if(trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[0]!=0 &&
@@ -284,6 +288,7 @@ public class Utils {
 				// Print CLAMI results
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
 					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+					v1_predictedLabelIdx.add(classifier.classifyInstance(newTestInstances.get(instIdx)));
 					
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
@@ -295,11 +300,11 @@ public class Utils {
 					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx));
 					
 					double max = prediction[0];
-					System.out.println("max: " + max);
-					//for(int i = 0; i < prediction.length; i++){
-						//System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(prediction[i]));
-						//if(max < prediction[i]) max = prediction[i];
-					//}
+//					System.out.println("max: " + max);
+					for(int i = 0; i < prediction.length; i++){
+						System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(prediction[i]));
+						if(max < prediction[i]) max = prediction[i];
+					}
 					
 					v1.add(max);
 					
@@ -321,6 +326,14 @@ public class Utils {
 				
 				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
 				eval.evaluateModel(classifier, newTestInstances);
+				
+//				System.out.println("newTestInstances");
+//				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
+//					for(int attrIdx = 0; attrIdx < newTestInstances.numAttributes(); attrIdx++){
+//						System.out.print(newTestInstances.get(instIdx).value(attrIdx) + ", ");
+//					}
+//					System.out.println();
+//				}
 				
 				if (v1_TP+v1_TN+v1_FP+v1_FN>0){
 					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
@@ -385,6 +398,7 @@ public class Utils {
 		int v2_TP=0, v2_FP=0, v2_TN=0, v2_FN=0;
 		double[] inverse_prediction;
 		List<Double> v2 = new ArrayList<Double>();
+		List<Double> v2_inverse_predictedLabelIdx = new ArrayList<Double>();
 		
 		if(inverse_trainingInstancesByCLAMI != null) {
 			// check if there are no instances in any one of two classes.
@@ -401,6 +415,7 @@ public class Utils {
 					
 					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
 						double inverse_predictedLabelIdx = inverse_classifier.classifyInstance(inverse_newTestInstances.get(instIdx));
+						v2_inverse_predictedLabelIdx.add(inverse_predictedLabelIdx);
 						
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
@@ -412,13 +427,13 @@ public class Utils {
 						inverse_prediction = inverse_classifier.distributionForInstance(inverse_newTestInstances.get(instIdx));
 						
 						double max = inverse_prediction[0];
-						System.out.println("max: " + max);
 						
 						for(int i = 0; i < inverse_prediction.length; i++){
-							System.out.println("Probability of class " + inverse_newTestInstances.classAttribute().value(i) + " : " + Double.toString(inverse_prediction[i]));
+//							System.out.println("Probability of class " + inverse_newTestInstances.classAttribute().value(i) + " : " + Double.toString(inverse_prediction[i]));
 							if(max < inverse_prediction[i]) max = inverse_prediction[i];
 						}
 						
+//						System.out.println("max: " + max);
 						v2.add(max);
 						
 						// compute T/F/P/N for the original instances labeled.
@@ -437,9 +452,24 @@ public class Utils {
 							}
 						}
 					}
+//					System.out.println("inverse_trainingInstancesByCLAMI");
+//					for(int instIdx = 0; instIdx < inverse_trainingInstancesByCLAMI.numInstances(); instIdx++){
+//						for(int attrIdx = 0; attrIdx < inverse_trainingInstancesByCLAMI.numAttributes(); attrIdx++){
+//							System.out.print(inverse_trainingInstancesByCLAMI.get(instIdx).value(attrIdx) + ", ");
+//						}
+//						System.out.println();
+//					}
 					
 					Evaluation inverse_eval = new Evaluation(inverse_trainingInstancesByCLAMI);
 					inverse_eval.evaluateModel(inverse_classifier, inverse_newTestInstances);
+					
+//					System.out.println("inverse_newTestInstances");
+//					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
+//						for(int attrIdx = 0; attrIdx < inverse_newTestInstances.numAttributes(); attrIdx++){
+//							System.out.print(inverse_newTestInstances.get(instIdx).value(attrIdx) + ", ");
+//						}
+//						System.out.println();
+//					}
 					
 					if (v2_TP+v2_TN+v2_FP+v2_FN>0){
 						printEvaluationResult(v2_TP, v2_TN, v2_FP, v2_FN, experimental);
@@ -465,23 +495,24 @@ public class Utils {
 			System.out.println("Does not inverse case!!");
 		}
 		
-		System.out.println("before final");
-		for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
-			for(int attrIdx = 0; attrIdx < final_newTestInstances.numAttributes(); attrIdx++){
-				System.out.print(final_newTestInstances.get(instIdx).value(attrIdx) + ", ");
-			}
-			System.out.println();
-		}
+//		System.out.println("before final");
+//		for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
+//			for(int attrIdx = 0; attrIdx < final_newTestInstances.numAttributes(); attrIdx++){
+//				System.out.print(final_newTestInstances.get(instIdx).value(attrIdx) + ", ");
+//			}
+//			System.out.println();
+//		}
 		
-		Instances labeling = getLabeling(final_newTestInstances, positiveLabel, v1, v2);
+		Instances labeling = getLabeling(final_newTestInstances, v1_predictedLabelIdx, v2_inverse_predictedLabelIdx, v1, v2, positiveLabel); // CLA로 라벨링 된 set
 		
-		System.out.println("after final");
-		for(int instIdx = 0; instIdx < labeling.numInstances(); instIdx++){
-			for(int attrIdx = 0; attrIdx < labeling.numAttributes(); attrIdx++){
-				System.out.print(labeling.get(instIdx).value(attrIdx) + ", ");
-			}
-			System.out.println();
-		}
+		
+//		System.out.println("after final");
+//		for(int instIdx = 0; instIdx < labeling.numInstances(); instIdx++){
+//			for(int attrIdx = 0; attrIdx < labeling.numAttributes(); attrIdx++){
+//				System.out.print(labeling.get(instIdx).value(attrIdx) + ", ");
+//			}
+//			System.out.println();
+//		}
 		
 		int TP=0, FP=0, TN=0, FN=0;
 		double[] final_prediction;
@@ -500,7 +531,16 @@ public class Utils {
 					System.out.println();
 					
 					for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
-						double final_predictedLabelIdx = final_classifier.classifyInstance(final_newTestInstances.get(instIdx));
+//						double final_predictedLabelIdx = final_classifier.classifyInstance(final_newTestInstances.get(instIdx));
+						double final_predictedLabelIdx = v1_predictedLabelIdx.get(instIdx);
+						if (!(v1_predictedLabelIdx.get(instIdx).equals(v2_inverse_predictedLabelIdx.get(instIdx)))) {
+							if (v1.get(instIdx) < v2.get(instIdx)) {
+								final_predictedLabelIdx = v2_inverse_predictedLabelIdx.get(instIdx);
+							}
+						}
+						
+//						System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
+						
 						
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
@@ -511,25 +551,34 @@ public class Utils {
 						
 						final_prediction = final_classifier.distributionForInstance(final_newTestInstances.get(instIdx));
 						
-						for(int i = 0; i < final_prediction.length; i++){
-							
-							System.out.println("Probability of class " + final_newTestInstances.classAttribute().value(i) + " : " + Double.toString(final_prediction[i]));
-						}
+//						for(int i = 0; i < final_prediction.length; i++){
+//							
+//							System.out.println("Probability of class " + final_newTestInstances.classAttribute().value(i) + " : " + Double.toString(final_prediction[i]));
+//						}
+						
 						
 						
 						// compute T/F/P/N for the original instances labeled.
 						if(!Double.isNaN(instances.get(instIdx).classValue())){
 							
 							if(final_predictedLabelIdx==instances.get(instIdx).classValue()){
-								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									TP++;
-								else
+									System.out.println("TP");
+								}
+								else {
 									TN++;
+									System.out.println("TN");
+								}
 							}else{
-								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									FP++;
-								else
+									System.out.println("FP");
+								}
+								else {
 									FN++;
+									System.out.println("FN");
+								}
 							}
 						}
 					}
