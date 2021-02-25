@@ -170,26 +170,43 @@ public class Utils {
 		Instances instancesByCLA = new Instances(instances);
 				
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-
+//			System.out.println(positiveLabel);
 //			System.out.println(" positive: " + instances.attribute(instances.classIndex()).indexOfValue(positiveLabel));
 //			System.out.println(" label: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
 //			System.out.println(" v1 prediction: " + v1_predictioned_label.get(instIdx));
 //			if ((instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) == (v1_predictioned_label.get(instIdx))) {
 //				System.out.println("yes!!!!");
 //			}
+			String negativeLabel = getNegLabel(instancesByCLA,positiveLabel);
 			
-			if(v1_predictioned_label.get(instIdx) != v2_predictioned_label.get(instIdx)) {
+			if(!(v1_predictioned_label.get(instIdx).equals(v2_predictioned_label.get(instIdx)))) {
+//				System.out.println("v1, v2: " + v1_predictioned_label.get(instIdx) +" " + v2_predictioned_label.get(instIdx));
 				if(v1.get(instIdx) < v2.get(instIdx)) {
-					// negative에 들어오는 애들은 clean인데 buggy로 예측되어서, clean으로 바꾸어줌 
+//					// negative에 들어오는 애들은 clean인데 buggy로 예측되어서, clean으로 바꾸어줌 
 					if (instances.attribute(instances.classIndex()).indexOfValue(positiveLabel) == (v1_predictioned_label.get(instIdx))) {
-//					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) { // ***** 
+////					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) { // ***** 
 						instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
+//						System.out.println(" 1: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
 					} 
-					// buggy인데 clean으로 예측, buggy로 바꾸어줌. 
-					else {
+//					// buggy인데 clean으로 예측, buggy로 바꾸어줌. 
+					
+					else if (instances.attribute(instances.classIndex()).indexOfValue(negativeLabel) == (v1_predictioned_label.get(instIdx))) {
 						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
+//						System.out.println(" 2: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
+//						instancesByCLA.instance(instIdx).setClassValue(v2_predictioned_label.get(instIdx));
 					}
+//					if ()
+//					instancesByCLA.instance(instIdx).setClassValue(v2_predictioned_label.get(instIdx));
+						
 				}	
+				else {
+					instancesByCLA.instance(instIdx).setClassValue(v1_predictioned_label.get(instIdx));
+//					System.out.println(" 3: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
+				}
+			}
+			else {
+				instancesByCLA.instance(instIdx).setClassValue(v1_predictioned_label.get(instIdx));
+//				System.out.println(" 4: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
 			}
 		}
 		return instancesByCLA;
@@ -295,6 +312,7 @@ public class Utils {
 		
 		int v1_TP=0, v1_FP=0, v1_TN=0, v1_FN=0;
 		double[] prediction;
+		double v1_AUC = 0;
 		List<Double> v1 = new ArrayList<Double>();
 		List<Double> v1_predictedLabelIdx = new ArrayList<Double>();
 		
@@ -308,6 +326,7 @@ public class Utils {
 				
 				// Print CLAMI results
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
+//					System.out.println(instIdx+ " v1_predictedLabelIdx: " + classifier.classifyInstance(newTestInstances.get(instIdx)));
 					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
 		            v1_predictedLabelIdx.add(classifier.classifyInstance(newTestInstances.get(instIdx)));
 		            
@@ -358,6 +377,7 @@ public class Utils {
 				
 				if (v1_TP+v1_TN+v1_FP+v1_FN>0){
 //					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
+					v1_AUC = eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)); 
 					// print AUC value
 //					if(!experimental)
 //						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
@@ -437,7 +457,9 @@ public class Utils {
 					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
 						double inverse_predictedLabelIdx = inverse_classifier.classifyInstance(inverse_newTestInstances.get(instIdx));
 		                v2_inverse_predictedLabelIdx.add(inverse_predictedLabelIdx);
-					
+		                
+//		                System.out.println(instIdx+ " v2_predictedLabelIdx: " + inverse_classifier.classifyInstance(newTestInstances.get(instIdx)));
+		                
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 									inverse_newTestInstances.classAttribute().value((int)inverse_predictedLabelIdx)	+
@@ -510,7 +532,19 @@ public class Utils {
 					System.exit(0);
 				}
 			}else{
-				System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+				//System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+				if (v1_TP+v1_TN+v1_FP+v1_FN>0){
+					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
+					// print AUC value
+					if(!experimental)
+						System.out.println(v1_AUC);
+					else
+						System.out.print("," + v1_AUC);
+				}
+				else if(suppress)
+					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
+				
+				return;
 			}
 		} else {
 			System.out.println("Does not inverse case!!");
@@ -611,7 +645,7 @@ public class Utils {
 //						System.out.println("TP + TN: " + (TP + TN));
 						// print AUC value
 						if(!experimental)
-							System.out.println("AUC: " + final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+							System.out.println(final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 						else
 							System.out.print("," + final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 					}
