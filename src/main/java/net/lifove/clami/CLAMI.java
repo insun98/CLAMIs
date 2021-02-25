@@ -86,7 +86,7 @@ public class CLAMI {
 				
 				for (File file: fileList) {
 					if (file.isFile()) {
-						System.out.println(i++);
+//						System.out.println(i++);
 //						System.out.print("file: " + file);
 						
 //						if (file.toString().endsWith(".arff") ) {
