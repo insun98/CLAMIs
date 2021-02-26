@@ -1,7 +1,10 @@
 package net.lifove.clami.util;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -240,7 +243,26 @@ public class Utils {
 	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,double threshold,boolean suppress,String mlAlg) {
 		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,threshold,suppress,false,mlAlg); //no experimental as default
 	}
-	
+	static public void writeADataFile(Instances instances,String targetFileName){
+		try {
+			File file= new File(targetFileName);
+			if(file.exists()){
+				return;
+			}
+
+			FileOutputStream fos = new FileOutputStream(file);
+			DataOutputStream dos=new DataOutputStream(fos);
+
+			dos.write((instances.toString()).getBytes());
+
+			dos.close();
+			fos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("FileName: " + targetFileName);
+			System.exit(0);
+		} 
+	}
 	/**
 	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
 	 * @param testInstances
@@ -363,7 +385,8 @@ public class Utils {
 						}
 					}
 				}
-				
+				writeADataFile(trainingInstancesByCLAMI,"trainingSet1");
+				writeADataFile(newTestInstances,"testSet1");
 				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
 				eval.evaluateModel(classifier, newTestInstances);
 				
