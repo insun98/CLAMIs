@@ -151,9 +151,7 @@ public class Utils {
 				}
 			}
 		
-		for(int i=0; i<K.length;i++) {
-			System.out.println(K[i]);
-			}
+		
 		// compare K values with 0.5 and if the value is greater than 0.5 then it is buggy.
 		double cutoffOfKForTopClusters = 0.5;
 	
