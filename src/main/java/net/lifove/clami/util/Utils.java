@@ -133,21 +133,23 @@ public class Utils {
 		
 		// compute, K = the number of metrics whose values are greater than median, for each instance
 		Double[] K = new Double[instances.numInstances()];
-		
 		for(int instIdx = 0; instIdx < instances.numInstances();instIdx++){
 			K[instIdx]=0.0;
+			Double sum = 0.0;
 			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
-				if (attrIdx == instances.classIndex())
-					continue;
 				
-				if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]){
-					K[instIdx]++;
+				if (attrIdx == instances.classIndex())
+					
+					continue;
+				else
+					sum=sum+1/(1+Math.pow(Math.E,-(instances.get(instIdx).value(attrIdx)-cutoffsForHigherValuesOfAttribute[attrIdx])));
+					K[instIdx]=sum/instances.numAttributes();
 				}
 			}
-		}
 		
-		// compute cutoff for the top half and bottom half clusters
-		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
+		
+		// compare K values with 0.5 and if the value is greater than 0.5 then it is buggy.
+		double cutoffOfKForTopClusters = 0.5;
 		
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
 			if(K[instIdx]>cutoffOfKForTopClusters)
