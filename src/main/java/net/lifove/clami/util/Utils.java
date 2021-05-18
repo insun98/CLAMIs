@@ -667,11 +667,16 @@ public class Utils {
 						printEvaluationResult(TP, TN, FP, FN, experimental);
 //						System.out.println("TP + TN: " + (TP + TN));
 						// print AUC value
-						if(!experimental)
+						if(!experimental) {
 							System.out.println(final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-						else
+							System.out.println(final_eval.matthewsCorrelationCoefficient(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+						}
+						else {
 							System.out.print("," + final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+							System.out.print("," + final_eval.matthewsCorrelationCoefficient(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+						}
 					}
+						
 					else if(suppress)
 						System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 					
