@@ -123,9 +123,15 @@ public class Utils {
 		
 		for(int instIdx = 0; instIdx < instances.numInstances();instIdx++){
 			K[instIdx]=0.0;
+			Double sum = 0.0;
 			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
 				if (attrIdx == instances.classIndex())
 					continue;
+				
+				/* this code is for degree */ 
+//				else
+//					sum=sum+1/(1+Math.pow(Math.E,-(instances.get(instIdx).value(attrIdx)-cutoffsForHigherValuesOfAttribute[attrIdx])));
+//					K[instIdx]=sum/instances.numAttributes();
 				
 				if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]){
 					K[instIdx]++;
@@ -144,6 +150,8 @@ public class Utils {
 		}
 		return instancesByCLA;
 	}
+	
+	
 
 	/**
 	 * Get higher value cutoffs for each attribute
