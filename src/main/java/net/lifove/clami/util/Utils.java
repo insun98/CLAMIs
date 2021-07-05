@@ -180,7 +180,7 @@ public class Utils {
 		Instances instancesByCLA = new Instances(instances);
 				
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-					}
+
 			String negativeLabel = getNegLabel(instancesByCLA,positiveLabel);
 			
 			if(!(v1_predictioned_label.get(instIdx).equals(v2_predictioned_label.get(instIdx)))) {
@@ -526,9 +526,6 @@ public class Utils {
 						}
 						
 						final_prediction = final_classifier.distributionForInstance(final_newTestInstances.get(instIdx));
-						
-						}
-						
 						
 						
 						// compute T/F/P/N for the original instances labeled.
