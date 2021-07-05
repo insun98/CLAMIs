@@ -19,6 +19,7 @@ import org.apache.commons.math3.stat.StatUtils;
 import com.google.common.primitives.Doubles;
 
 import weka.classifiers.Classifier;
+
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -176,48 +177,28 @@ public class Utils {
 	
 	private static Instances getLabeling(Instances instances, List<Double> v1_predictioned_label, List<Double> v2_predictioned_label, List<Double> v1, List<Double> v2, String positiveLabel) {
 		
-		//System.out.println("\nHigher value cutoff > P" + percentileCutoff );
-		
 		Instances instancesByCLA = new Instances(instances);
 				
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-//			System.out.println(positiveLabel);
-//			System.out.println(" positive: " + instances.attribute(instances.classIndex()).indexOfValue(positiveLabel));
-//			System.out.println(" label: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
-//			System.out.println(" v1 prediction: " + v1_predictioned_label.get(instIdx));
-//			if ((instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) == (v1_predictioned_label.get(instIdx))) {
-//				System.out.println("yes!!!!");
-//			}
+					}
 			String negativeLabel = getNegLabel(instancesByCLA,positiveLabel);
 			
 			if(!(v1_predictioned_label.get(instIdx).equals(v2_predictioned_label.get(instIdx)))) {
-//				System.out.println("v1, v2: " + v1_predictioned_label.get(instIdx) +" " + v2_predictioned_label.get(instIdx));
 				if(v1.get(instIdx) < v2.get(instIdx)) {
-//					// negative에 들어오는 애들은 clean인데 buggy로 예측되어서, clean으로 바꾸어줌 
 					if (instances.attribute(instances.classIndex()).indexOfValue(positiveLabel) == (v1_predictioned_label.get(instIdx))) {
-////					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) == positiveLabel) { // ***** 
-						instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
-//						System.out.println(" 1: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
+						instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));				
 					} 
-//					// buggy인데 clean으로 예측, buggy로 바꾸어줌. 
 					
 					else if (instances.attribute(instances.classIndex()).indexOfValue(negativeLabel) == (v1_predictioned_label.get(instIdx))) {
-						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
-//						System.out.println(" 2: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
-//						instancesByCLA.instance(instIdx).setClassValue(v2_predictioned_label.get(instIdx));
+						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);				
 					}
-//					if ()
-//					instancesByCLA.instance(instIdx).setClassValue(v2_predictioned_label.get(instIdx));
-						
 				}	
 				else {
 					instancesByCLA.instance(instIdx).setClassValue(v1_predictioned_label.get(instIdx));
-//					System.out.println(" 3: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
 				}
 			}
 			else {
 				instancesByCLA.instance(instIdx).setClassValue(v1_predictioned_label.get(instIdx));
-//				System.out.println(" 4: "+ Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx));
 			}
 		}
 		return instancesByCLA;
@@ -312,29 +293,14 @@ public class Utils {
 		for(Object key: keys){
 			
 			String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1);
-//			System.out.println("\nselected: " + selectedMetricIndices + "\n");
 			trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
 			newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
-					
-//			for(int instIdx = 0; instIdx < trainingInstancesByCLAMI.numInstances(); instIdx++){
-//				for(int attrIdx = 0; attrIdx < trainingInstancesByCLAMI.numAttributes(); attrIdx++){
-//					System.out.print(trainingInstancesByCLAMI.get(instIdx).value(attrIdx) + ", ");
-//				}
-//				System.out.println();
-//			}
 			
 			// Instance selection
 			cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
 			
 			String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
 			trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
-			
-//			for(int instIdx = 0; instIdx < trainingInstancesByCLAMI.numInstances(); instIdx++){
-//				for(int attrIdx = 0; attrIdx < trainingInstancesByCLAMI.numAttributes(); attrIdx++){
-//					System.out.print(trainingInstancesByCLAMI.get(instIdx).value(attrIdx) + ", ");
-//				}
-//				System.out.println();
-//			}
 			
 			if(trainingInstancesByCLAMI.numInstances() != 0)
 				break;
@@ -363,16 +329,13 @@ public class Utils {
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
-							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 					// compute T/F/P/N for the original instances labeled.
 					
 					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx));
 					
 					double max = prediction[0];
-//					System.out.println("max: " + max);
 					for(int i = 0; i < prediction.length; i++){
-//						System.out.println("Probability of class " + newTestInstances.classAttribute().value(i) + " : " + Double.toString(prediction[i]));
 						if(max < prediction[i]) max = prediction[i];
 					}
 					
@@ -398,22 +361,10 @@ public class Utils {
 				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
 				eval.evaluateModel(classifier, newTestInstances);
 				
-//				System.out.println("newTestInstances");
-//				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
-//					for(int attrIdx = 0; attrIdx < newTestInstances.numAttributes(); attrIdx++){
-//						System.out.print(newTestInstances.get(instIdx).value(attrIdx) + ", ");
-//					}
-//					System.out.println();
-//				}
-				
 				if (v1_TP+v1_TN+v1_FP+v1_FN>0){
-//					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
+
 					v1_AUC = eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)); 
-					// print AUC value
-//					if(!experimental)
-//						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-//					else
-//						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
@@ -432,32 +383,17 @@ public class Utils {
 			
 			if (Integer.parseInt(descending_key.toString()) >= 0) { //Integer.parseInt(inverse_key.toString())
 										
-				String inverse_selectedMetricIndices = metricIdxWithTheSameViolationScores.get(descending_key) + (instancesByCLA.classIndex() +1);
-//				System.out.println("\nselected: " + inverse_selectedMetricIndices);	
+				String inverse_selectedMetricIndices = metricIdxWithTheSameViolationScores.get(descending_key) + (instancesByCLA.classIndex() +1);	
 				
 				inverse_trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,inverse_selectedMetricIndices,true);
 				inverse_newTestInstances =	getInstancesByRemovingSpecificAttributes(testInstances,inverse_selectedMetricIndices,true);
-						
-//				for(int instIdx = 0; instIdx < inverse_trainingInstancesByCLAMI.numInstances(); instIdx++){
-//	 				for(int attrIdx = 0; attrIdx < inverse_trainingInstancesByCLAMI.numAttributes(); attrIdx++){
-//						System.out.print(inverse_trainingInstancesByCLAMI.get(instIdx).value(attrIdx) + ", ");
-//					}
-//					System.out.println();
-//				}		
 						
 				// Instance selection
 				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(inverse_trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
 						
 				String inverse_instIndicesNeedToRemove = getSelectedInstances(inverse_trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
 				inverse_trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(inverse_trainingInstancesByCLAMI,inverse_instIndicesNeedToRemove,false);
-						
-//				System.out.println("final");
-//				for(int instIdx = 0; instIdx < inverse_trainingInstancesByCLAMI.numInstances(); instIdx++){
-//					for(int attrIdx = 0; attrIdx < inverse_trainingInstancesByCLAMI.numAttributes(); attrIdx++){
-//						System.out.print(inverse_trainingInstancesByCLAMI.get(instIdx).value(attrIdx) + ", ");
-//					}
-//					System.out.println();
-//				}
+					
 						
 						
 				if(inverse_trainingInstancesByCLAMI.numInstances() != 0) {
@@ -481,15 +417,11 @@ public class Utils {
 					Classifier inverse_classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
 					inverse_classifier.buildClassifier(inverse_trainingInstancesByCLAMI);
 					
-					// Print CLAMI results
-					
-//					System.out.println();
 					
 					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
 						double inverse_predictedLabelIdx = inverse_classifier.classifyInstance(inverse_newTestInstances.get(instIdx));
 		                v2_inverse_predictedLabelIdx.add(inverse_predictedLabelIdx);
 		                
-//		                System.out.println(instIdx+ " v2_predictedLabelIdx: " + inverse_classifier.classifyInstance(newTestInstances.get(instIdx)));
 		                
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
@@ -503,11 +435,10 @@ public class Utils {
 						double max = inverse_prediction[0];
 						
 						for(int i = 0; i < inverse_prediction.length; i++){
-//							System.out.println("Probability of class " + inverse_newTestInstances.classAttribute().value(i) + " : " + Double.toString(inverse_prediction[i]));
+
 							if(max < inverse_prediction[i]) max = inverse_prediction[i];
 						}
 						
-//						System.out.println("max: " + max);
 						v2.add(max);
 						
 						// compute T/F/P/N for the original instances labeled.
@@ -526,24 +457,9 @@ public class Utils {
 							}
 						}
 					}
-//					System.out.println("inverse_trainingInstancesByCLAMI");
-//					for(int instIdx = 0; instIdx < inverse_trainingInstancesByCLAMI.numInstances(); instIdx++){
-//						for(int attrIdx = 0; attrIdx < inverse_trainingInstancesByCLAMI.numAttributes(); attrIdx++){
-//							System.out.print(inverse_trainingInstancesByCLAMI.get(instIdx).value(attrIdx) + ", ");
-//						}
-//						System.out.println();
-//					}
 					
 					Evaluation inverse_eval = new Evaluation(inverse_trainingInstancesByCLAMI);
 					inverse_eval.evaluateModel(inverse_classifier, inverse_newTestInstances);
-					
-//					System.out.println("inverse_newTestInstances");
-//					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
-//						for(int attrIdx = 0; attrIdx < inverse_newTestInstances.numAttributes(); attrIdx++){
-//							System.out.print(inverse_newTestInstances.get(instIdx).value(attrIdx) + ", ");
-//						}
-//						System.out.println();
-//					}
 					
 					if (v2_TP+v2_TN+v2_FP+v2_FN>0){
 //						printEvaluationResult(v2_TP, v2_TN, v2_FP, v2_FN, experimental);
@@ -563,7 +479,7 @@ public class Utils {
 					System.exit(0);
 				}
 			}else{
-				//System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+			
 				if (v1_TP+v1_TN+v1_FP+v1_FN>0){
 					printEvaluationResult(v1_TP, v1_TN, v1_FP, v1_FN, experimental);
 					// print AUC value
@@ -581,25 +497,7 @@ public class Utils {
 			System.out.println("Does not inverse case!!");
 		}
 		
-//		System.out.println("before final");
-//		for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
-//			for(int attrIdx = 0; attrIdx < final_newTestInstances.numAttributes(); attrIdx++){
-//				System.out.print(final_newTestInstances.get(instIdx).value(attrIdx) + ", ");
-//			}
-//			System.out.println();
-//		}
-		
-		//final_newTestInstances: CLA / v1_predictedLabelIdx: CLAMI / v2_inverse_predictedLabelIdx: CLAMI_MAX(MVS)
 		Instances labeling = getLabeling(final_newTestInstances, v1_predictedLabelIdx, v2_inverse_predictedLabelIdx, v1, v2, positiveLabel); // CLA�� �󺧸� �� set
-		
-		
-//		System.out.println("after final");
-//		for(int instIdx = 0; instIdx < labeling.numInstances(); instIdx++){
-//			for(int attrIdx = 0; attrIdx < labeling.numAttributes(); attrIdx++){
-//				System.out.print(labeling.get(instIdx).value(attrIdx) + ", ");
-//			}
-//			System.out.println();
-//		}
 		
 		int TP=0, FP=0, TN=0, FN=0;
 		double[] final_prediction;
@@ -617,14 +515,7 @@ public class Utils {
 					
 					for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
 						double final_predictedLabelIdx = final_classifier.classifyInstance(final_newTestInstances.get(instIdx));
-//						double final_predictedLabelIdx = labeling.get(instIdx).value(labeling.classIndex());
-//						if (!(v1_predictedLabelIdx.get(instIdx).equals(v2_inverse_predictedLabelIdx.get(instIdx)))) {
-//							if (v1.get(instIdx) < v2.get(instIdx)) {
-//								final_predictedLabelIdx = v2_inverse_predictedLabelIdx.get(instIdx);
-//							}
-//						}
-						
-//						System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
+
 						
 						
 						if(!suppress) {
@@ -636,10 +527,7 @@ public class Utils {
 						
 						final_prediction = final_classifier.distributionForInstance(final_newTestInstances.get(instIdx));
 						
-//						for(int i = 0; i < final_prediction.length; i++){
-//							
-//							System.out.println("Probability of class " + final_newTestInstances.classAttribute().value(i) + " : " + Double.toString(final_prediction[i]));
-//						}
+						}
 						
 						
 						
@@ -649,20 +537,20 @@ public class Utils {
 							if(final_predictedLabelIdx==instances.get(instIdx).classValue()){
 								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									TP++;
-//									System.out.println("TP");
+
 								}
 								else {
 									TN++;
-//									System.out.println("TN");
+
 								}
 							}else{
 								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									FP++;
-//									System.out.println("FP");
+
 								}
 								else {
 									FN++;
-//									System.out.println("FN");
+
 								}
 							}
 						}
@@ -673,8 +561,6 @@ public class Utils {
 					
 					if (TP+TN+FP+FN>0){
 						printEvaluationResult(TP, TN, FP, FN, experimental);
-//						System.out.println("TP + TN: " + (TP + TN));
-						// print AUC value
 						if(!experimental) {
 							System.out.println(final_eval.areaUnderROC(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 							System.out.println(final_eval.matthewsCorrelationCoefficient(final_newTestInstances.classAttribute().indexOfValue(positiveLabel)));
