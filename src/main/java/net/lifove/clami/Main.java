@@ -29,6 +29,7 @@ public class Main {
 	String posLabelValue;
 	double percentileCutoff = 50;
 	boolean forCLAMI = false;
+	boolean forCLABI = false;
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
@@ -118,13 +119,15 @@ public class Main {
 	}
 
 	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
-		
-		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental, isDegree);
+		if(forCLAMI && forCLABI)
+			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
+		if(forCLABI)
+			CLABI.getCLABIResult();
+		else if(forCLAMI)
+			CLAMI.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree);
 		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree);
-			
-			
+			Utils.getCLAResult(instances,percentileCutoff,positiveLabel,suppress, isDegree);
+		
 	}
 
 	private void printHelp(Options options) {
@@ -180,7 +183,11 @@ public class Main {
 		        .build());
 		
 		options.addOption(Option.builder("m").longOpt("clami")
-		        .desc("Run CLAMI instead of CLA")
+		        .desc("Run CLAMI")
+		        .build());
+		
+		options.addOption(Option.builder("b").longOpt("clabi")
+		        .desc("Run CLABI")
 		        .build());
 		
 		options.addOption(Option.builder("e").longOpt("experimental")
@@ -222,11 +229,11 @@ public class Main {
 			if(cmd.getOptionValue("c") != null)
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
 			forCLAMI = cmd.hasOption("m");
+			forCLABI = cmd.hasOption("b");
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
-			/* */
 			isDegree = cmd.hasOption("d"); 
 
 		} catch (Exception e) {
