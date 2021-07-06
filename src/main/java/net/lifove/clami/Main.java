@@ -35,6 +35,7 @@ public class Main {
 	String experimental;
 	String mlAlg="";
 	boolean isDegree = false;
+	int sort =0; 
 
 	public static void main(String[] args) {
 		
@@ -121,12 +122,14 @@ public class Main {
 	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
 		if(forCLAMI && forCLABI)
 			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
-		if(forCLABI)
-			CLABI.getCLABIResult();
+		if(forCLABI) {
+			sort = 1;
+			CLABI.getCLABIResult(instances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort);
+		}
 		else if(forCLAMI)
-			CLAMI.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree);
+			CLAMI.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree, sort);
 		else
-			Utils.getCLAResult(instances,percentileCutoff,positiveLabel,suppress, isDegree);
+			CLA.getCLAResult(instances,percentileCutoff,positiveLabel,suppress, isDegree);
 		
 	}
 

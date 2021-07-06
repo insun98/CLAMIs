@@ -1,7 +1,10 @@
 package net.lifove.clami;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import net.lifove.clami.util.Utils;
 import weka.classifiers.Classifier;
@@ -9,15 +12,6 @@ import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
 public class CLAMI {
-	/**
-	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
-	 * @param testInstances
-	 * @param instancesByCLA
-	 * @param positiveLabel
-	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree); //no experimental as default
-	}
 	
 	/**
 	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
@@ -25,7 +19,12 @@ public class CLAMI {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree, int sort) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort); //no experimental as default
+	}
+	
+	
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort) {
 		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
@@ -38,8 +37,16 @@ public class CLAMI {
 		
 		// (1) get distinct violation scores ordered by ASC
 		HashMap<Integer,String> metricIdxWithTheSameViolationScores = Utils.getMetricIndicesWithTheViolationScores(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
-		Object[] keys = metricIdxWithTheSameViolationScores.keySet().toArray();
-		Arrays.sort(keys);
+		Object[] keys =  metricIdxWithTheSameViolationScores.keySet().toArray();
+		if(sort==0) 
+			Arrays.sort(keys);
+		else 
+			Arrays.sort(keys, Collections.reverseOrder());
+		
+		
+		
+		
+		
 		
 		Instances trainingInstancesByCLAMI = null;
 		
@@ -61,6 +68,14 @@ public class CLAMI {
 				break;
 		}
 		
+		
+		
+		
+		
+		
+		
+		double[] prediction;
+		List<Double> labelingProbability = new ArrayList<Double>();
 		// check if there are no instances in any one of two classes.
 		if(trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[0]!=0 &&
 				trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[1]!=0){
@@ -79,6 +94,20 @@ public class CLAMI {
 							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 					// compute T/F/P/N for the original instances labeled.
+					
+					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx)); //probability of clean and buggy
+					
+					double max = prediction[0]; // take first index of prediction as max  
+
+					for(int i = 0; i < prediction.length; i++){
+
+						if(max < prediction[i]) max = prediction[i]; // find max
+					}
+					
+					labelingProbability.add(max);
+					
+					
+					
 					if(!Double.isNaN(instances.get(instIdx).classValue())){
 						if(predictedLabelIdx==instances.get(instIdx).classValue()){
 							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
@@ -120,4 +149,3 @@ public class CLAMI {
 
 
 }
-
