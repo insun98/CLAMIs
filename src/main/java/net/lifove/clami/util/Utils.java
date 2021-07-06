@@ -31,8 +31,8 @@ public class Utils {
 	 * @param suppress detailed prediction results
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress) {
-		getCLAResult(instances,percentileCutoff,positiveLabel,suppress,false); // no experimental as default
+	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress, boolean isDegree) {
+		getCLAResult(instances,percentileCutoff,positiveLabel,suppress,false, isDegree); // no experimental as default
 	}
 	
 	/**
@@ -44,8 +44,8 @@ public class Utils {
 	 * @param experimental option to display a result in a line;
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress,boolean experimental) {
-		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
+	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress,boolean experimental, boolean isDegree) {
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
 		
 		// Print CLA results
 		int TP=0, FP=0,TN=0, FN=0;
@@ -110,7 +110,7 @@ public class Utils {
 	 * @param positiveLabel
 	 * @return
 	 */
-	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel) {
+	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel, boolean isDegree) {
 		
 		//System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
@@ -129,12 +129,14 @@ public class Utils {
 					continue;
 				
 				/* this code is for degree */ 
-//				else
-//					sum=sum+1/(1+Math.pow(Math.E,-(instances.get(instIdx).value(attrIdx)-cutoffsForHigherValuesOfAttribute[attrIdx])));
-//					K[instIdx]=sum/instances.numAttributes();
-				
-				if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]){
-					K[instIdx]++;
+				if (isDegree == true) {
+					sum=sum+1/(1+Math.pow(Math.E,-(instances.get(instIdx).value(attrIdx)-cutoffsForHigherValuesOfAttribute[attrIdx])));
+					K[instIdx]=sum/instances.numAttributes();	
+				}
+				else { 
+					if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]){
+						K[instIdx]++;
+					}
 				}
 			}
 		}
@@ -177,8 +179,8 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree); //no experimental as default
 	}
 	
 	/**
@@ -187,11 +189,11 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree) {
 		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
-		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
 		
 		// Compute medians
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
