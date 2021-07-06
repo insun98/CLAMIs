@@ -33,6 +33,7 @@ public class CLAMI {
 	boolean suppress = false;
 	String experimental;
 	String mlAlg="";
+	boolean isDegree = false;
 
 	public static void main(String[] args) {
 		
@@ -119,9 +120,9 @@ public class CLAMI {
 	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
 		
 		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental);
+			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental, isDegree);
 		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg);
+			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree);
 			
 			
 	}
@@ -195,6 +196,13 @@ public class CLAMI {
 		        .hasArg()
 		        .argName("Fully qualalified weka classifier name")
 		        .build());
+		
+		/* more options for other version of CLAMI (CLA+, CLAMI+, CLABI, CLABI+) */
+		
+		// for 'plus' option
+		options.addOption(Option.builder("d").longOpt("degree")
+				.desc("To represent the violation of each attribute in continuous value") 
+				.build()) ; 
 
 		return options;
 
@@ -218,6 +226,8 @@ public class CLAMI {
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
+			/* */
+			isDegree = cmd.hasOption("d"); 
 
 		} catch (Exception e) {
 			printHelp(options);
