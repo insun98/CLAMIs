@@ -164,15 +164,13 @@ public class Utils {
 			String negativeLabel = getNegLabel(instancesByCLA,positiveLabel);
 			
 			if(!(v1_predictioned_label.get(instIdx).equals(v2_predictioned_label.get(instIdx)))) {
-//				
+			
+				// 
 				if(v1.get(instIdx) < v2.get(instIdx)) {
-//					// negative에 들어오는 애들은 clean인데 buggy로 예측되어서, clean으로 바꾸어줌 
 					if (instances.attribute(instances.classIndex()).indexOfValue(positiveLabel) == (v1_predictioned_label.get(instIdx))) {				 
 						instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
 
 					} 
-//					// buggy인데 clean으로 예측, buggy로 바꾸어줌. 
-					
 					else if (instances.attribute(instances.classIndex()).indexOfValue(negativeLabel) == (v1_predictioned_label.get(instIdx))) {
 						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 
@@ -254,7 +252,7 @@ public class Utils {
 		
 		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
-		// Compute medians
+		// Compute medians 
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
 				
 		// Metric selection
@@ -282,6 +280,7 @@ public class Utils {
 			
 			String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1);
 
+			// Metric selection 
 			trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
 			newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
 					
@@ -312,7 +311,7 @@ public class Utils {
 				classifier.buildClassifier(trainingInstancesByCLAMI);
 				
 				// Print CLAMI results
-				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
+				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){ //put the max probability of all instances in the arraylist(v1)
 
 					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
 		            v1_predictedLabelIdx.add(classifier.classifyInstance(newTestInstances.get(instIdx)));
@@ -324,13 +323,13 @@ public class Utils {
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 					// compute T/F/P/N for the original instances labeled.
 					
-					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx));
+					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx)); //probability of clean and buggy
 					
-					double max = prediction[0];
+					double max = prediction[0]; // take first index of prediction as max  
 
 					for(int i = 0; i < prediction.length; i++){
 
-						if(max < prediction[i]) max = prediction[i];
+						if(max < prediction[i]) max = prediction[i]; // find max
 					}
 					
 					v1.add(max);
@@ -380,21 +379,16 @@ public class Utils {
 			if (Integer.parseInt(descending_key.toString()) >= 0) { //Integer.parseInt(inverse_key.toString())
 										
 				String inverse_selectedMetricIndices = metricIdxWithTheSameViolationScores.get(descending_key) + (instancesByCLA.classIndex() +1);
-	
-				
+
+				// Metric selection 
 				inverse_trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,inverse_selectedMetricIndices,true);
 				inverse_newTestInstances =	getInstancesByRemovingSpecificAttributes(testInstances,inverse_selectedMetricIndices,true);
-						
-
 						
 				// Instance selection
 				cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(inverse_trainingInstancesByCLAMI,percentileCutoff); // get higher value cutoffs from the metric-selected dataset
 						
 				String inverse_instIndicesNeedToRemove = getSelectedInstances(inverse_trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
 				inverse_trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(inverse_trainingInstancesByCLAMI,inverse_instIndicesNeedToRemove,false);
-						
-
-						
 						
 				if(inverse_trainingInstancesByCLAMI.numInstances() != 0) {
 					break;
@@ -418,15 +412,11 @@ public class Utils {
 					inverse_classifier.buildClassifier(inverse_trainingInstancesByCLAMI);
 					
 					// Print CLAMI results
-					
-
-					
 					for(int instIdx = 0; instIdx < inverse_newTestInstances.numInstances(); instIdx++){
 						double inverse_predictedLabelIdx = inverse_classifier.classifyInstance(inverse_newTestInstances.get(instIdx));
 		                v2_inverse_predictedLabelIdx.add(inverse_predictedLabelIdx);
 		                
 
-		                
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 									inverse_newTestInstances.classAttribute().value((int)inverse_predictedLabelIdx)	+
@@ -493,7 +483,7 @@ public class Utils {
 				return;
 			}
 		} else {
-			System.out.println("Does not inverse case!!");
+			System.out.println("Inversed case does not exist");
 		}
 		
 
@@ -530,31 +520,23 @@ public class Utils {
 						}
 						
 						final_prediction = final_classifier.distributionForInstance(final_newTestInstances.get(instIdx));
-						
 					
-						
-						
-						
 						// compute T/F/P/N for the original instances labeled.
 						if(!Double.isNaN(instances.get(instIdx).classValue())){
 							
 							if(final_predictedLabelIdx==instances.get(instIdx).classValue()){
 								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									TP++;
-
 								}
 								else {
 									TN++;
-
 								}
 							}else{
 								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
 									FP++;
-
 								}
 								else {
 									FN++;
-
 								}
 							}
 						}
