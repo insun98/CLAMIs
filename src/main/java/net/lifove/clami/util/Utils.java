@@ -20,7 +20,7 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.instance.RemoveRange;
 
-public class Utils {
+public class Utils  {
 	
 	
 	/**

@@ -1,5 +1,5 @@
 package net.lifove.clami;
 
-public class CLAMI {
+public class CLABI {
 
 }
