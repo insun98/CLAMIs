@@ -24,9 +24,9 @@ public class CLABI {
 	 * @param positiveLabel
 	 */
 	public static void getCLABIResult(Instances testInstances, Instances instances, String positiveLabel,
-			double percentileCutoff, boolean suppress, String mlAlg, boolean isDegree, int sort) {
+			double percentileCutoff, boolean suppress, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 		getCLABIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, false, mlAlg, isDegree,
-				sort); // no experimental as default
+				sort, forCLABI); // no experimental as default
 
 	}
 
@@ -39,19 +39,19 @@ public class CLABI {
 	 * @param positiveLabel
 	 */
 	public static void getCLABIResult(Instances testInstances, Instances instances, String positiveLabel,
-			double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort) {
+			double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 
 		instancesByCLA = Utils.getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
-		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 1);
+		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 1, forCLABI);
 		CLABIIdx = CLAMI.predictedLabelIdx;
 		probabilityOfCLABIIdx = CLAMI.probabilityOfIdx;
 		
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0);
+			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
 			return;
 
 		} else {
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0);
+			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
 			CLAMIIdx = CLAMI.predictedLabelIdx;
 			probabilityOfCLAMIIdx = CLAMI.probabilityOfIdx;
 
@@ -75,7 +75,7 @@ public class CLABI {
 						for (int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++) {
 							double final_predictedLabelIdx = final_classifier
 									.classifyInstance(instancesByCLA.get(instIdx));
-							System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
+				
 
 							if (!suppress) {
 								System.out.println("CLAMI: Instance " + (instIdx + 1) + " predicted as, "

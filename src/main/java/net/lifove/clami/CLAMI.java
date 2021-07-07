@@ -17,18 +17,20 @@ public class CLAMI {
 	
 	static List<Double> predictedLabelIdx = new ArrayList<Double>();
 	
+	
+	
 	/**
 	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
 	 * @param testInstances
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree, int sort) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort, forCLABI); //no experimental as default
 	}
 	
 	
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
@@ -101,6 +103,7 @@ public class CLAMI {
 					double LabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
 					predictedLabelIdx.add(LabelIdx);
 					
+					
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)LabelIdx)	+
@@ -140,7 +143,7 @@ public class CLAMI {
 				
 				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
 				eval.evaluateModel(classifier, newTestInstances);
-				
+				if(!forCLABI) {
 				if (TP+TN+FP+FN>0){
 					Utils.printEvaluationResult(TP, TN, FP, FN, experimental);
 					// print AUC value
@@ -151,7 +154,7 @@ public class CLAMI {
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
-				
+				}
 			} catch (Exception e) {
 				System.err.println("Specify the correct Weka machine learing classifier with a fully qualified name. E.g., weka.classifiers.functions.Logistic");
 				e.printStackTrace();
@@ -166,7 +169,10 @@ public class CLAMI {
 			predictedLabelIdx=null;
 			
 		}
+	
+		
 	}
+	
 }
 
 
