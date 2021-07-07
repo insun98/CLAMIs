@@ -23,7 +23,6 @@ public class CLABI {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-
 	public static void getCLABIResult(Instances testInstances, Instances instances, String positiveLabel,
 			double percentileCutoff, boolean suppress, String mlAlg, boolean isDegree, int sort) {
 		getCLABIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, false, mlAlg, isDegree,
@@ -150,8 +149,18 @@ public class CLABI {
 
 	}
 
-	private static Instances getLabeling(Instances instances, List<Double> v1_predictioned_label,
-			List<Double> v2_predictioned_label, List<Double> v1, List<Double> v2, String positiveLabel) {
+	/***
+	 * To solve the conflict between ascending orders label result and descending order label result  
+	 * @param instances
+	 * @param CLAMIIdx
+	 * @param CLABIIdx
+	 * @param probabilityOfCLAMIIdx
+	 * @param probabilityOfCLABIIdx
+	 * @param positiveLabel
+	 * @return
+	 */
+	private static Instances getLabeling(Instances instances, List<Double> CLAMIIdx,
+			List<Double> CLABIIdx, List<Double> probabilityOfCLAMIIdx, List<Double> probabilityOfCLABIIdx, String positiveLabel) {
 
 		Instances instancesByCLA = new Instances(instances);
 
@@ -159,27 +168,26 @@ public class CLABI {
 
 			String negativeLabel = Utils.getNegLabel(instancesByCLA, positiveLabel);
 
-			if (!(v1_predictioned_label.get(instIdx).equals(v2_predictioned_label.get(instIdx)))) {
+			if (!(CLAMIIdx.get(instIdx).equals(CLABIIdx.get(instIdx)))) {
 
-				//
-				if (v1.get(instIdx) < v2.get(instIdx)) {
+				if (probabilityOfCLAMIIdx.get(instIdx) < probabilityOfCLABIIdx.get(instIdx)) {
 					if (instances.attribute(instances.classIndex())
-							.indexOfValue(positiveLabel) == (v1_predictioned_label.get(instIdx))) {
+							.indexOfValue(positiveLabel) == (CLAMIIdx.get(instIdx))) {
 						instancesByCLA.instance(instIdx)
 								.setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
 
 					} else if (instances.attribute(instances.classIndex())
-							.indexOfValue(negativeLabel) == (v1_predictioned_label.get(instIdx))) {
+							.indexOfValue(negativeLabel) == (CLAMIIdx.get(instIdx))) {
 						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 
 					}
 
 				} else {
-					instancesByCLA.instance(instIdx).setClassValue(v1_predictioned_label.get(instIdx));
+					instancesByCLA.instance(instIdx).setClassValue(CLAMIIdx.get(instIdx));
 
 				}
 			} else {
-				instancesByCLA.instance(instIdx).setClassValue(v1_predictioned_label.get(instIdx));
+				instancesByCLA.instance(instIdx).setClassValue(CLAMIIdx.get(instIdx));
 
 			}
 		}
