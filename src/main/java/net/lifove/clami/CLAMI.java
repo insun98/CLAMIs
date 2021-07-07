@@ -84,6 +84,12 @@ public class CLAMI {
 				Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
 				classifier.buildClassifier(trainingInstancesByCLAMI);
 				
+				
+				
+				
+				
+				
+				
 				// Print CLAMI results
 				int TP=0, FP=0,TN=0, FN=0;
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
@@ -94,6 +100,8 @@ public class CLAMI {
 							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 					// compute T/F/P/N for the original instances labeled.
+					
+					
 					
 					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx)); //probability of clean and buggy
 					
