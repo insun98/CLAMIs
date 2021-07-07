@@ -54,7 +54,7 @@ public class Utils  {
 	 * @param instances
 	 * @param percentileCutoff
 	 * @param positiveLabel
-	 * @return
+	 * @return Instances
 	 */
 	public static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel, boolean isDegree) {
 		
@@ -105,7 +105,7 @@ public class Utils  {
 	 * Get higher value cutoffs for each attribute
 	 * @param instances
 	 * @param percentileCutoff
-	 * @return
+	 * @return double[]
 	 */
 	public static double[] getHigherValueCutoffs(Instances instances, double percentileCutoff) {
 		// compute median values for attributes
@@ -119,10 +119,13 @@ public class Utils  {
 		return cutoffForHigherValuesOfAttribute;
 	}
 	
-	
-	
-	
-
+	/**
+	 * Return the HashMap that the key is Metric Violation Score and the value is string of metric indexes 
+	 * @param instances
+	 * @param cutoffsForHigherValuesOfAttribute
+	 * @param positiveLabel
+	 * @return HashMap<Integer, String>
+	 */
 	public static HashMap<Integer, String> getMetricIndicesWithTheViolationScores(Instances instances,
 			double[] cutoffsForHigherValuesOfAttribute, String positiveLabel) {
 
@@ -165,6 +168,13 @@ public class Utils  {
 		return metricIndicesWithTheSameViolationScores;
 	}
 
+	/**
+	 * Get the selected instance for the instance selection 
+	 * @param instances
+	 * @param cutoffsForHigherValuesOfAttribute
+	 * @param positiveLabel
+	 * @return String
+	 */
 	public static String getSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
 			String positiveLabel) {
 		
@@ -200,7 +210,7 @@ public class Utils  {
 	 * Get the negative label string value from the positive label value
 	 * @param instances
 	 * @param positiveLabel
-	 * @return
+	 * @return String 
 	 */
 	static public String getNegLabel(Instances instances, String positiveLabel){
 		if(instances.classAttribute().numValues()==2){
@@ -255,8 +265,8 @@ public class Utils  {
 	/**
 	 * Get median from ArraList<Double>
 	 * @param values
-	 * @return
-	 */
+	 * @return double
+	 */ 
 	static public double getMedian(ArrayList<Double> values){
 		return getPercentile(values,50);
 	}
@@ -264,7 +274,7 @@ public class Utils  {
 	/**
 	 * Get a value in a specific percentile from ArraList<Double>
 	 * @param values
-	 * @return
+	 * @return double
 	 */
 	static public double getPercentile(ArrayList<Double> values,double percentile){
 		return StatUtils.percentile(getDoublePrimitive(values),percentile);
@@ -273,7 +283,7 @@ public class Utils  {
 	/**
 	 * Get primitive double form ArrayList<Double>
 	 * @param values
-	 * @return
+	 * @return double[]
 	 */
 	public static double[] getDoublePrimitive(ArrayList<Double> values) {
 		return Doubles.toArray(values);

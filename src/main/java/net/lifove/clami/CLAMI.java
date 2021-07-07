@@ -14,10 +14,7 @@ import weka.core.Instances;
 public class CLAMI {
 	
 	static List<Double> probabilityOfIdx = new ArrayList<Double>(); 
-	
 	static List<Double> predictedLabelIdx = new ArrayList<Double>();
-	
-	
 	
 	/**
 	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
@@ -28,7 +25,6 @@ public class CLAMI {
 	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort, forCLABI); //no experimental as default
 	}
-	
 	
 	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 		
@@ -48,10 +44,6 @@ public class CLAMI {
 			Arrays.sort(keys);
 		else 
 			Arrays.sort(keys, Collections.reverseOrder());
-		
-		
-		
-		
 		
 		
 		Instances trainingInstancesByCLAMI = null;
@@ -75,11 +67,6 @@ public class CLAMI {
 		}
 		
 		
-		
-		
-		
-		
-		
 		double[] prediction;
 		List<Double> labelingProbability = new ArrayList<Double>();
 		if(trainingInstancesByCLAMI != null) {
@@ -90,12 +77,6 @@ public class CLAMI {
 			try {
 				Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
 				classifier.buildClassifier(trainingInstancesByCLAMI);
-				
-				
-				
-				
-				
-				
 				
 				// Print CLAMI results
 				int TP=0, FP=0,TN=0, FN=0;
@@ -110,9 +91,6 @@ public class CLAMI {
 							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 					// compute T/F/P/N for the original instances labeled.
-					
-					
-					
 					prediction = classifier.distributionForInstance(newTestInstances.get(instIdx)); //probability of clean and buggy
 					
 					double max = prediction[0]; // take first index of prediction as max  
@@ -123,8 +101,6 @@ public class CLAMI {
 					}
 					
 					labelingProbability.add(max);
-					
-					
 					
 					if(!Double.isNaN(instances.get(instIdx).classValue())){
 						if(LabelIdx==instances.get(instIdx).classValue()){
@@ -167,10 +143,8 @@ public class CLAMI {
 		}else {
 			probabilityOfIdx = null;
 			predictedLabelIdx=null;
-			
 		}
 	
-		
 	}
 	
 }
