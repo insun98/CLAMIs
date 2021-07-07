@@ -120,8 +120,10 @@ public class Main {
 	}
 
 	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
-		if(forCLAMI && forCLABI)
+		if(forCLAMI && forCLABI) {
 			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
+			return ;
+		}
 		if(forCLABI) {
 			sort = 1;
 			CLABI.getCLABIResult(instances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort, forCLABI);
