@@ -43,29 +43,23 @@ public class CLABI {
 			double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort) {
 
 		instancesByCLA = Utils.getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
-		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg,
-				isDegree, 1);
+		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 1);
 		CLABIIdx = CLAMI.predictedLabelIdx;
 		probabilityOfCLABIIdx = CLAMI.probabilityOfIdx;
+		
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
-			
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental,
-					mlAlg, isDegree, 0);
+			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0);
 			return;
 
 		} else {
-
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental,
-					mlAlg, isDegree, 0);
+			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0);
 			CLAMIIdx = CLAMI.predictedLabelIdx;
 			probabilityOfCLAMIIdx = CLAMI.probabilityOfIdx;
 
-			Instances labeling = getLabeling(instancesByCLA, CLAMIIdx, CLABIIdx, probabilityOfCLAMIIdx,
-					probabilityOfCLABIIdx, positiveLabel);
+			Instances labeling = getLabeling(instancesByCLA, CLAMIIdx, CLABIIdx, probabilityOfCLAMIIdx,probabilityOfCLABIIdx, positiveLabel);
 			int TP = 0, FP = 0, TN = 0, FN = 0;
 
 			// double[] final_prediction;
-
 			String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
 
 			if (labeling != null) {
@@ -79,7 +73,6 @@ public class CLABI {
 						final_classifier.buildClassifier(labeling);
 
 						// Print CLAMI results
-
 						for (int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++) {
 							double final_predictedLabelIdx = final_classifier
 									.classifyInstance(instancesByCLA.get(instIdx));
@@ -94,8 +87,7 @@ public class CLABI {
 										+ Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx) + ") ");
 							}
 
-							// final_prediction =
-							// final_classifier.distributionForInstance(instancesByCLA.get(instIdx));
+							// final_prediction = final_classifier.distributionForInstance(instancesByCLA.get(instIdx));
 
 							// compute T/F/P/N for the original instances labeled.
 							if (!Double.isNaN(instances.get(instIdx).classValue())) {
