@@ -13,6 +13,10 @@ import weka.core.Instances;
 
 public class CLAMI {
 	
+	static List<Double> probabilityOfIdx = new ArrayList<Double>(); 
+	
+	static List<Double> predictedLabelIdx = new ArrayList<Double>();
+	
 	/**
 	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
 	 * @param testInstances
@@ -76,6 +80,7 @@ public class CLAMI {
 		
 		double[] prediction;
 		List<Double> labelingProbability = new ArrayList<Double>();
+		if(trainingInstancesByCLAMI != null) {
 		// check if there are no instances in any one of two classes.
 		if(trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[0]!=0 &&
 				trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[1]!=0){
@@ -93,10 +98,12 @@ public class CLAMI {
 				// Print CLAMI results
 				int TP=0, FP=0,TN=0, FN=0;
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
-					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+					double LabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+					predictedLabelIdx.add(LabelIdx);
+					
 					if(!suppress)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
-							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
+							newTestInstances.classAttribute().value((int)LabelIdx)	+
 							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 					// compute T/F/P/N for the original instances labeled.
@@ -117,13 +124,13 @@ public class CLAMI {
 					
 					
 					if(!Double.isNaN(instances.get(instIdx).classValue())){
-						if(predictedLabelIdx==instances.get(instIdx).classValue()){
-							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+						if(LabelIdx==instances.get(instIdx).classValue()){
+							if(LabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
 								TP++;
 							else
 								TN++;
 						}else{
-							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+							if(LabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
 								FP++;
 							else
 								FN++;
@@ -153,7 +160,13 @@ public class CLAMI {
 		}else{
 			System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
 		}
+			
+		}else {
+			probabilityOfIdx = null;
+			predictedLabelIdx=null;
+			
+		}
 	}
-
-
 }
+
+
