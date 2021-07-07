@@ -66,26 +66,61 @@ public class Main {
 				return;
 			}
 			
-			// load an arff file
-			Instances instances = Utils.loadArff(dataFilePath, labelName);
+			File dir = new File(dataFilePath);
 			
-			if (instances !=null){
-				double unit = (double) 100/(instances.numInstances());
-				//double unitFloor = Math.floor(unit);
-				double unitCeil = Math.ceil(unit);
+			// If input path is directory, all file list is execute 
+			if (dir.isDirectory()) {
 				
-				// TODO need to check how median is computed
-				if (unit >= 1 && 100-unitCeil < percentileCutoff){
-					System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
-					return;
-				}
+				File[] fileList = dir.listFiles();
 				
-				if (experimental==null || experimental.equals("")){
-					// do prediction
-					prediction(instances,posLabelValue,false);
-				}else{
-					experiment(instances,posLabelValue);
+				for (File file: fileList) {
+					
+					// load an arff file
+					Instances instances = Utils.loadArff(file.toString(), labelName);
+					
+					if (instances !=null){
+						double unit = (double) 100/(instances.numInstances());
+						//double unitFloor = Math.floor(unit);
+						double unitCeil = Math.ceil(unit);
+						
+						// TODO need to check how median is computed
+						if (unit >= 1 && 100-unitCeil < percentileCutoff){
+							System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+							return;
+						}
+						
+						if (experimental==null || experimental.equals("")){
+							// do prediction
+							prediction(instances,posLabelValue,false);
+						}else{
+							experiment(instances,posLabelValue);
+						}
+					}
 				}
+			}
+			else {
+				// load an arff file
+				Instances instances = Utils.loadArff(dataFilePath, labelName);
+				
+				if (instances !=null){
+					double unit = (double) 100/(instances.numInstances());
+					//double unitFloor = Math.floor(unit);
+					double unitCeil = Math.ceil(unit);
+					
+					// TODO need to check how median is computed
+					if (unit >= 1 && 100-unitCeil < percentileCutoff){
+						System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+						return;
+					}
+					
+					if (experimental==null || experimental.equals("")){
+						// do prediction
+						prediction(instances,posLabelValue,false);
+					}else{
+						experiment(instances,posLabelValue);
+					}
+				}
+			
 			}
 		}
 	}
