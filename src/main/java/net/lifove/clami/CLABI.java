@@ -42,16 +42,21 @@ public class CLABI {
 			double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 
 		instancesByCLA = Utils.getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
+		
+		// call getCLAMIResult with Descending order (sort = 1)
 		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 1, forCLABI);
 		CLABIIdx = CLAMI.predictedLabelIdx;
 		probabilityOfCLABIIdx = CLAMI.probabilityOfIdx;
 		
+		// if Descending result is null, just execute CLAMI and return 
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
-			System.out.println("No instances remained using descending keys. Therefore, no result for CLABI.");
 			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
 			return;
 
-		} else {
+		}
+		// else if Descending result is not null, Execute CLABI 
+		else {
+			// call getCLAMIResult with Ascending order (sort = 0)
 			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
 			CLAMIIdx = CLAMI.predictedLabelIdx;
 			probabilityOfCLAMIIdx = CLAMI.probabilityOfIdx;
