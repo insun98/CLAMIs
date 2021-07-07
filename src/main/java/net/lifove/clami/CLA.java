@@ -30,6 +30,7 @@ public class CLA {
 		
 		// Print CLA results
 		int TP=0, FP=0,TN=0, FN=0;
+		
 		for(int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++){
 			if(!suppress)
 				System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) +

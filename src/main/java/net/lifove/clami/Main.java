@@ -159,10 +159,9 @@ public class Main {
 			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
 			return ;
 		}
-		if(forCLABI) {
-			sort = 1;
-			CLABI.getCLABIResult(instances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort, forCLABI);
-		}
+		if(forCLABI) 
+			CLABI.getCLABIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental ,mlAlg, isDegree, sort, forCLABI);
+		
 		else if(forCLAMI)
 			CLAMI.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree, sort, forCLABI);
 		else

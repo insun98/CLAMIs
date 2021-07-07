@@ -47,6 +47,7 @@ public class CLABI {
 		probabilityOfCLABIIdx = CLAMI.probabilityOfIdx;
 		
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
+			System.out.println("No instances remained using descending keys. Therefore, no result for CLABI.");
 			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
 			return;
 
@@ -61,7 +62,7 @@ public class CLABI {
 			// double[] final_prediction;
 			String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
 
-			if (labeling != null) {
+			
 				// check if there are no instances in any one of two classes.
 				if (labeling.attributeStats(labeling.classIndex()).nominalCounts[0] != 0
 						&& labeling.attributeStats(labeling.classIndex()).nominalCounts[1] != 0) {
@@ -78,7 +79,7 @@ public class CLABI {
 				
 
 							if (!suppress) {
-								System.out.println("CLAMI: Instance " + (instIdx + 1) + " predicted as, "
+								System.out.println("CLABI: Instance " + (instIdx + 1) + " predicted as, "
 										+ instancesByCLA.classAttribute().value((int) final_predictedLabelIdx) +
 										// ((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean")
 										// +
@@ -142,9 +143,7 @@ public class CLABI {
 					System.err.println(
 							"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
 				}
-			} else {
-				System.out.println("Does not inverse case!!");
-			}
+			
 		}
 
 	}

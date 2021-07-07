@@ -85,7 +85,7 @@ public class CLAMI {
 					predictedLabelIdx.add(LabelIdx);
 					
 					
-					if(!suppress)
+					if(!suppress && !forCLABI)
 						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)LabelIdx)	+
 							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
