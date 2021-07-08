@@ -40,14 +40,14 @@ public class CLABI {
 	 */
 	public static void getCLABIResult(Instances testInstances, Instances instances, String positiveLabel,
 			double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
-
+		
 		instancesByCLA = Utils.getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
 		
 		// call getCLAMIResult with Descending order (sort = 1)
 		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 1, forCLABI);
-		CLABIIdx = CLAMI.predictedLabelIdx;
-		probabilityOfCLABIIdx = CLAMI.probabilityOfIdx;
-		
+		CLABIIdx.addAll(CLAMI.predictedLabelIdx);
+		probabilityOfCLABIIdx.addAll(CLAMI.probabilityOfIdx);
+
 		// if Descending result is null, just execute CLAMI and return 
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
 			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, false);
@@ -58,16 +58,15 @@ public class CLABI {
 		else {
 			// call getCLAMIResult with Ascending order (sort = 0)
 			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
-			CLAMIIdx = CLAMI.predictedLabelIdx;
-			probabilityOfCLAMIIdx = CLAMI.probabilityOfIdx;
-
+			CLAMIIdx.addAll(CLAMI.predictedLabelIdx);
+			probabilityOfCLAMIIdx.addAll(CLAMI.probabilityOfIdx);
+			
 			Instances labeling = getLabeling(instancesByCLA, CLAMIIdx, CLABIIdx, probabilityOfCLAMIIdx,probabilityOfCLABIIdx, positiveLabel);
+			
 			int TP = 0, FP = 0, TN = 0, FN = 0;
 
 			// double[] final_prediction;
 			String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
-
-			
 				// check if there are no instances in any one of two classes.
 				if (labeling.attributeStats(labeling.classIndex()).nominalCounts[0] != 0
 						&& labeling.attributeStats(labeling.classIndex()).nominalCounts[1] != 0) {
@@ -165,7 +164,7 @@ public class CLABI {
 	 */
 	private static Instances getLabeling(Instances instances, List<Double> CLAMIIdx,
 			List<Double> CLABIIdx, List<Double> probabilityOfCLAMIIdx, List<Double> probabilityOfCLABIIdx, String positiveLabel) {
-
+		
 		Instances instancesByCLA = new Instances(instances);
 
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
@@ -175,26 +174,21 @@ public class CLABI {
 			if (!(CLAMIIdx.get(instIdx).equals(CLABIIdx.get(instIdx)))) {
 
 				if (probabilityOfCLAMIIdx.get(instIdx) < probabilityOfCLABIIdx.get(instIdx)) {
-					if (instances.attribute(instances.classIndex())
-							.indexOfValue(positiveLabel) == (CLAMIIdx.get(instIdx))) {
-						instancesByCLA.instance(instIdx)
-								.setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
+					if (instances.attribute(instances.classIndex()).indexOfValue(positiveLabel) == (CLAMIIdx.get(instIdx))) {
+						instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
 
-					} else if (instances.attribute(instances.classIndex())
-							.indexOfValue(negativeLabel) == (CLAMIIdx.get(instIdx))) {
+					} else if (instances.attribute(instances.classIndex()).indexOfValue(negativeLabel) == (CLAMIIdx.get(instIdx))) {
 						instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
-
 					}
 
 				} else {
 					instancesByCLA.instance(instIdx).setClassValue(CLAMIIdx.get(instIdx));
-
 				}
 			} else {
 				instancesByCLA.instance(instIdx).setClassValue(CLAMIIdx.get(instIdx));
-
 			}
 		}
+		
 		return instancesByCLA;
 	}
 }

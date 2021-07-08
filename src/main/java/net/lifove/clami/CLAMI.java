@@ -28,6 +28,10 @@ public class CLAMI {
 	
 	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
 		
+
+		probabilityOfIdx.removeAll(probabilityOfIdx) ;
+		predictedLabelIdx.removeAll(predictedLabelIdx) ;
+		
 		String mlAlgorithm = mlAlg!=null && !mlAlg.equals("")?mlAlg:"weka.classifiers.functions.Logistic";
 		
 		Instances instancesByCLA = Utils.getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
@@ -68,7 +72,6 @@ public class CLAMI {
 		
 		
 		double[] prediction;
-		List<Double> labelingProbability = new ArrayList<Double>();
 		if(trainingInstancesByCLAMI != null) {
 		// check if there are no instances in any one of two classes.
 		if(trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[0]!=0 &&
@@ -100,7 +103,7 @@ public class CLAMI {
 						if(max < prediction[i]) max = prediction[i]; // find max
 					}
 					
-					labelingProbability.add(max);
+					probabilityOfIdx.add(max);
 					
 					if(!Double.isNaN(instances.get(instIdx).classValue())){
 						if(LabelIdx==instances.get(instIdx).classValue()){
@@ -126,6 +129,7 @@ public class CLAMI {
 					if(!experimental) {
 						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 						System.out.println("MCC: " + eval.matthewsCorrelationCoefficient(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+						System.out.println("mcc: " + ((TP*TN - FP*FN) / (Math.sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))));
 					}
 					else {
 						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
@@ -148,6 +152,8 @@ public class CLAMI {
 			probabilityOfIdx = null;
 			predictedLabelIdx=null;
 		}
+		
+		
 	
 	}
 	
