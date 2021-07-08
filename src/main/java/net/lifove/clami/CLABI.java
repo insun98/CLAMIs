@@ -118,19 +118,7 @@ public class CLABI {
 						final_eval.evaluateModel(final_classifier, instancesByCLA);
 
 						if (TP + TN + FP + FN > 0) {
-							Utils.printEvaluationResult(TP, TN, FP, FN, experimental);
-
-							if (!experimental) {
-								System.out.println(final_eval
-										.areaUnderROC(instancesByCLA.classAttribute().indexOfValue(positiveLabel)));
-								System.out.println(final_eval.matthewsCorrelationCoefficient(
-										instancesByCLA.classAttribute().indexOfValue(positiveLabel)));
-							} else {
-								System.out.print("," + final_eval
-										.areaUnderROC(instancesByCLA.classAttribute().indexOfValue(positiveLabel)));
-								System.out.print("," + final_eval.matthewsCorrelationCoefficient(
-										instancesByCLA.classAttribute().indexOfValue(positiveLabel)));
-							}
+							Utils.printEvaluationResult(TP, TN, FP, FN, final_eval, instancesByCLA, positiveLabel, experimental);
 						}
 
 						else if (suppress)

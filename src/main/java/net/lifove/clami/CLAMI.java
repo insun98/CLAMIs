@@ -124,17 +124,8 @@ public class CLAMI {
 				eval.evaluateModel(classifier, newTestInstances);
 				if(!forCLABI) {
 				if (TP+TN+FP+FN>0){
-					Utils.printEvaluationResult(TP, TN, FP, FN, experimental);
-					// print AUC value
-					if(!experimental) {
-						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-						System.out.println("MCC: " + eval.matthewsCorrelationCoefficient(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-						System.out.println("mcc: " + ((TP*TN - FP*FN) / (Math.sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))));
-					}
-					else {
-						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-						System.out.println("," + eval.matthewsCorrelationCoefficient(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
-					}
+					Utils.printEvaluationResult(TP, TN, FP, FN, eval, newTestInstances, positiveLabel, experimental);
+					
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");

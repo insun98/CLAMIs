@@ -29,11 +29,13 @@ public class Utils  {
 	 * @param fP
 	 * @param fN
 	 */
-	public static void printEvaluationResult(int tP, int tN, int fP, int fN, boolean experimental) {
+	public static void printEvaluationResult(int tP, int tN, int fP, int fN, Evaluation eval, Instances instances, String positiveLabel, boolean experimental) {
 		
-		double precision = (double)tP/(tP+fP);
-		double recall = (double)tP/(tP+fN);
-		double f1 = (2*(precision*recall))/(precision+recall);
+		double precision = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
+		double recall = eval.recall(instances.classAttribute().indexOfValue(positiveLabel)) ;
+		double f1 = eval.fMeasure(instances.classAttribute().indexOfValue(positiveLabel));
+		double AUC = eval.areaUnderROC(instances.classAttribute().indexOfValue(positiveLabel)) ;
+		double MCC = eval.matthewsCorrelationCoefficient(instances.classAttribute().indexOfValue(positiveLabel)) ;
 		
 		if(!experimental){
 			System.out.println("TP: " + tP);
@@ -41,11 +43,15 @@ public class Utils  {
 			System.out.println("TN: " + tN);
 			System.out.println("FN: " + fN);
 			
-			System.out.println("Precision: " + precision);
-			System.out.println("Recall: " + recall);
-			System.out.println("F1: " + f1);
+			System.out.println("precision: " + precision);
+			System.out.println("recall: " + recall);
+			System.out.println("f1: " + f1);
+			
+			System.out.println("AUC: " + AUC);
+			System.out.println("MCC: " + MCC);
+			
 		}else{
-			System.out.print(precision + "," + recall + "," + f1);
+			System.out.print(precision + "," + recall + "," + f1 + "," + AUC + "," + MCC);
 		}
 	}
 
