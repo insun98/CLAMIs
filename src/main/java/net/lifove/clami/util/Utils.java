@@ -29,6 +29,26 @@ public class Utils  {
 	 * @param fP
 	 * @param fN
 	 */
+	public static void printEvaluationResultCLA(int tP, int tN, int fP, int fN, boolean experimental) {
+		
+		double precision = (double)tP/(tP+fP);
+		double recall = (double)tP/(tP+fN);
+		double f1 = (2*(precision*recall))/(precision+recall);
+		if(!experimental){
+			System.out.println("TP: " + tP);
+			System.out.println("FP: " + fP);
+			System.out.println("TN: " + tN);
+			System.out.println("FN: " + fN);
+			
+			System.out.println("precision: " + precision);
+			System.out.println("recall: " + recall);
+			System.out.println("f1: " + f1);
+		}else{
+			System.out.print(precision + "," + recall + "," + f1);
+		}
+		
+	}
+	
 	public static void printEvaluationResult(int tP, int tN, int fP, int fN, Evaluation eval, Instances instances, String positiveLabel, boolean experimental) {
 		
 		double precision = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
@@ -344,4 +364,5 @@ public class Utils  {
 
 		return newInstances;
 	}
+
 }

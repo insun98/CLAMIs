@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.lifove.clami.util.Utils;
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
+import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
 public class CLABI {
@@ -114,11 +114,11 @@ public class CLABI {
 							}
 						}
 
-						Evaluation final_eval = new Evaluation(labeling);
-						final_eval.evaluateModel(final_classifier, instancesByCLA);
+						Evaluation eval = new Evaluation(labeling);
+						eval.evaluateModel(final_classifier, instancesByCLA);
 
 						if (TP + TN + FP + FN > 0) {
-							Utils.printEvaluationResult(TP, TN, FP, FN, final_eval, instancesByCLA, positiveLabel, experimental);
+							Utils.printEvaluationResult(TP,  TN, FP, FN, eval, instancesByCLA, positiveLabel, experimental);
 						}
 
 						else if (suppress)
