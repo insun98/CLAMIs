@@ -50,7 +50,7 @@ public class CLABI {
 		
 		// if Descending result is null, just execute CLAMI and return 
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, forCLABI);
+			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg, isDegree, 0, false);
 			return;
 
 		}
