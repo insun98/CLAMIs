@@ -41,8 +41,8 @@ public class Utils {
 				cell = row.createCell(columnCount++);
 				cell.setCellValue((String) field);
 			}
-			for (int i = 1; i < Data.size(); i++) {
-				ArrayList<Object> arrData = Data.get(i);
+			for (int i = 1; i <= Data.size(); i++) {
+				ArrayList<Object> arrData = Data.get(i-1);
 				row = sheet.createRow(i);
 				for (int k = 0; k < arrData.size(); k++) {
 					sheet.autoSizeColumn(k);
@@ -100,6 +100,7 @@ public class Utils {
 		
 		
 		ArrayList<Object> subData = new ArrayList<Object>();
+		System.out.println(fileName);
 		subData.add(0, fileName);
 		subData.add(1, tP);
 		subData.add(2, fP);
