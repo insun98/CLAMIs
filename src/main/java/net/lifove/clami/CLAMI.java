@@ -22,11 +22,11 @@ public class CLAMI {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort, forCLABI); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg, boolean isDegree, int sort, boolean forCLABI, String fileName) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg, isDegree, sort, forCLABI, fileName); //no experimental as default
 	}
 	
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort, boolean forCLABI, String fileName) {
 		
 
 		probabilityOfIdx.removeAll(probabilityOfIdx) ;
@@ -124,7 +124,7 @@ public class CLAMI {
 				eval.evaluateModel(classifier, newTestInstances);
 				if(!forCLABI) {
 				if (TP+TN+FP+FN>0){
-					Utils.printEvaluationResult(TP, TN, FP, FN, eval, newTestInstances, positiveLabel, experimental);
+					Utils.printEvaluationResult(TP, TN, FP, FN, eval, newTestInstances, positiveLabel, experimental, fileName);
 					
 				}
 				else if(suppress)

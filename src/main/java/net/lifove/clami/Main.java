@@ -1,6 +1,8 @@
 package net.lifove.clami;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,14 +18,16 @@ import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
 /**
- * CLAMI implementation:
- * CLAMI: Defect Prediction on Unlabeled Datasets, in Proceedings of the 30th IEEE/ACM International Conference on Automated Software Engineering (ASE 2015), Lincoln, Nebraska, USA, November 9 - 13, 2015
+ * CLAMI implementation: CLAMI: Defect Prediction on Unlabeled Datasets, in
+ * Proceedings of the 30th IEEE/ACM International Conference on Automated
+ * Software Engineering (ASE 2015), Lincoln, Nebraska, USA, November 9 - 13,
+ * 2015
  * 
  * @author JC
  *
  */
 public class Main {
-	
+
 	String dataFilePath;
 	String labelName;
 	String posLabelValue;
@@ -33,228 +37,209 @@ public class Main {
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
-	String mlAlg="";
+	String mlAlg = "";
 	boolean isDegree = false;
-	int sort =0; 
+	int sort = 0;
 
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) throws FileNotFoundException, IOException {
+
 		new Main().runner(args);
-		
+
 	}
 
-	void runner(String[] args) {
-		
+	void runner(String[] args) throws FileNotFoundException, IOException {
+
 		Options options = createOptions();
-		
-		if(parseOptions(options, args)){
-			if (help){
+
+		if (parseOptions(options, args)) {
+			if (help) {
 				printHelp(options);
 				return;
 			}
-			
+
 			// exit when percentile range is not correct (it should be 0 < range <= 100)
-			if (percentileCutoff <=0 || 100 < percentileCutoff){
+			if (percentileCutoff <= 0 || 100 < percentileCutoff) {
 				System.err.println("Cutoff percentile must be 0 < and <=100");
 				return;
 			}
-			
+
 			// exit experimental option format is not correct
-			if(experimental!=null && !checkExperimentalOption(experimental)){
-				System.err.println("Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
-						+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
+			if (experimental != null && !checkExperimentalOption(experimental)) {
+				System.err.println(
+						"Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
+								+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
 				return;
 			}
-			
+
 			File dir = new File(dataFilePath);
-			
-			// If input path is directory, all file list is execute 
+
+			// If input path is directory, all file list is execute
 			if (dir.isDirectory()) {
-				
+
 				File[] fileList = dir.listFiles();
-				
-				for (File file: fileList) {
-					
+
+				for (File file : fileList) {
+
 					// load an arff file
 					Instances instances = Utils.loadArff(file.toString(), labelName);
-					
-					if (instances !=null){
-						double unit = (double) 100/(instances.numInstances());
-						//double unitFloor = Math.floor(unit);
+
+					if (instances != null) {
+						double unit = (double) 100 / (instances.numInstances());
+						// double unitFloor = Math.floor(unit);
 						double unitCeil = Math.ceil(unit);
-						
+
 						// TODO need to check how median is computed
-						if (unit >= 1 && 100-unitCeil < percentileCutoff){
-							System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+						if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
+							System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
 							return;
 						}
-						
-						if (experimental==null || experimental.equals("")){
+
+						if (experimental == null || experimental.equals("")) {
 							// do prediction
-							prediction(instances,posLabelValue,false);
-						}else{
-							experiment(instances,posLabelValue);
+							prediction(instances, posLabelValue, false, file.toString());
+						} else {
+							experiment(instances, posLabelValue, file.toString());
 						}
 					}
 				}
-			}
-			else {
+			} else {
 				// load an arff file
 				Instances instances = Utils.loadArff(dataFilePath, labelName);
-				
-				if (instances !=null){
-					double unit = (double) 100/(instances.numInstances());
-					//double unitFloor = Math.floor(unit);
+
+				if (instances != null) {
+					double unit = (double) 100 / (instances.numInstances());
+					// double unitFloor = Math.floor(unit);
 					double unitCeil = Math.ceil(unit);
-					
+
 					// TODO need to check how median is computed
-					if (unit >= 1 && 100-unitCeil < percentileCutoff){
-						System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+					if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
+						System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
 						return;
 					}
-					
-					if (experimental==null || experimental.equals("")){
+
+					if (experimental == null || experimental.equals("")) {
 						// do prediction
-						prediction(instances,posLabelValue,false);
-					}else{
-						experiment(instances,posLabelValue);
+						prediction(instances, posLabelValue, false, dataFilePath);
+					} else {
+						experiment(instances, posLabelValue, dataFilePath);
 					}
 				}
-			
+
 			}
 		}
+		if (forCLABI)
+			Utils.makeFile("CLABI");
+		else if (forCLAMI)
+			Utils.makeFile("CLAMI");
+		else
+			Utils.makeFile("CLA");
 	}
-	
-	private boolean checkExperimentalOption(String expOpt) {	
-		Pattern pattern=Pattern.compile("^[0-9]+:[0-9]");
+
+	private boolean checkExperimentalOption(String expOpt) {
+		Pattern pattern = Pattern.compile("^[0-9]+:[0-9]");
 		Matcher m = pattern.matcher(expOpt);
 		return m.find();
 	}
 
-	private void experiment(Instances instances, String posLabelValue) {
-		
+	private void experiment(Instances instances, String posLabelValue, String fileName)
+			throws FileNotFoundException, IOException {
+
 		String[] splitOptions = experimental.split(":");
 		int folds = Integer.parseInt(splitOptions[0]);
 		int numRuns = Integer.parseInt(splitOptions[1]);
-		
-		String source = dataFilePath.substring(dataFilePath.lastIndexOf(File.separator)+1).replace(".arff", "");
-		
-		for(int repeat=0;repeat < numRuns;repeat++){
-			
+
+		String source = dataFilePath.substring(dataFilePath.lastIndexOf(File.separator) + 1).replace(".arff", "");
+
+		for (int repeat = 0; repeat < numRuns; repeat++) {
+
 			// randomize with different seed for each iteration
-			instances.randomize(new Random(repeat)); 
+			instances.randomize(new Random(repeat));
 			instances.stratify(folds);
-			
-			for(int fold = 0; fold < folds; fold++){
-				System.out.print(repeat + "," +fold + "," + source + ",");
+
+			for (int fold = 0; fold < folds; fold++) {
+				System.out.print(repeat + "," + fold + "," + source + ",");
 				Instances targetInstances = instances.testCV(folds, fold);
-				prediction(targetInstances,posLabelValue,true);
+				prediction(targetInstances, posLabelValue, true, fileName);
 				System.out.println();
 			}
 		}
 	}
 
-	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
-		if(forCLAMI && forCLABI) {
+	void prediction(Instances instances, String positiveLabel, boolean isExperimental, String fileName)
+			throws FileNotFoundException, IOException {
+		if (forCLAMI && forCLABI) {
 			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
-			return ;
+			return;
 		}
-		if(forCLABI) 
-			CLABI.getCLABIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental ,mlAlg, isDegree, sort, forCLABI);
-		
-		else if(forCLAMI)
-			CLAMI.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg, isDegree, sort, forCLABI);
+		if (forCLABI)
+			CLABI.getCLABIResult(instances, instances, positiveLabel, percentileCutoff, suppress, isExperimental, mlAlg,
+					isDegree, sort, forCLABI, fileName);
+
+		else if (forCLAMI)
+			CLAMI.getCLAMIResult(instances, instances, positiveLabel, percentileCutoff, suppress, isExperimental, mlAlg,
+					isDegree, sort, forCLABI, fileName);
 		else
-			CLA.getCLAResult(instances,percentileCutoff,positiveLabel,suppress, isDegree);
-		
+			CLA.getCLAResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+
 	}
 
 	private void printHelp(Options options) {
 		// automatically generate the help statement
 		HelpFormatter formatter = new HelpFormatter();
 		String header = "Execute CLA/CLAMI unsuprvised defect predicition. On Windows, use CLAMI.bat instead of ./CLAMI";
-		String footer ="\nPlease report issues at https://github.com/lifove/CLAMI/issues";
-		formatter.printHelp( "./CLAMI", header, options, footer, true);
+		String footer = "\nPlease report issues at https://github.com/lifove/CLAMI/issues";
+		formatter.printHelp("./CLAMI", header, options, footer, true);
 	}
-	
-	Options createOptions(){
-		
+
+	Options createOptions() {
+
 		// create Options object
 		Options options = new Options();
-		
+
 		// add options
-		options.addOption(Option.builder("f").longOpt("file")
-		        .desc("Arff file path to predict defects")
-		        .hasArg()
-		        .argName("file")
-		        .required()
-		        .build());
-		
-		options.addOption(Option.builder("h").longOpt("help")
-		        .desc("Help")
-		        .build());
-		
+		options.addOption(Option.builder("f").longOpt("file").desc("Arff file path to predict defects").hasArg()
+				.argName("file").required().build());
+
+		options.addOption(Option.builder("h").longOpt("help").desc("Help").build());
+
 		options.addOption(Option.builder("c").longOpt("cutoff")
-		        .desc("Cutoff percentile for higher values. Default is median (50).")
-		        .hasArg()
-		        .argName("cutoff percentile")
-		        .build());
-		
+				.desc("Cutoff percentile for higher values. Default is median (50).").hasArg()
+				.argName("cutoff percentile").build());
+
 		options.addOption(Option.builder("s").longOpt("suppress")
-		        .desc("Suppress detailed prediction results. Only works when the arff data is labeled.")
-		        .build());
-		
-		options.addOption(Option.builder("l").longOpt("lable")
-		        .desc("Label (Class attrubite) name")
-		        .hasArg()
-		        .argName("attribute name")
-		        .required()
-		        .build());
-		
-		options.addOption(Option.builder("p").longOpt("poslabel")
-		        .desc("String value of buggy label. Since CLA/CLAMI works for unlabeld data (in case of weka arff files, labeled as '?',"
-		        		+ " it is not necessary to use this option. "
-		        		+ "However, if the data file is labeled, "
-		        		+ "it will show prediction results in terms of precision, recall, and f-measure for evaluation puerpose.")
-		        .hasArg()
-		        .required()
-		        .argName("postive label value")
-		        .build());
-		
-		options.addOption(Option.builder("m").longOpt("clami")
-		        .desc("Run CLAMI")
-		        .build());
-		
-		options.addOption(Option.builder("b").longOpt("clabi")
-		        .desc("Run CLABI")
-		        .build());
-		
-		options.addOption(Option.builder("e").longOpt("experimental")
-		        .desc("Options for experimenets to compare CLA/CLAMI with other cross-project defect prediction approaches by k-fold cross validation. "
-		        		+ "Support k-fold cross validation n times. "
-		        		+ "Option format: [# of folds]:[# of repetition]. E.g, -e 2:500 (Two-fold cross validation 500 repetition")
-		        .hasArg()
-		        .argName("#folds:#repeat")
-		        .build());
-		
+				.desc("Suppress detailed prediction results. Only works when the arff data is labeled.").build());
+
+		options.addOption(Option.builder("l").longOpt("lable").desc("Label (Class attrubite) name").hasArg()
+				.argName("attribute name").required().build());
+
+		options.addOption(Option.builder("p").longOpt("poslabel").desc(
+				"String value of buggy label. Since CLA/CLAMI works for unlabeld data (in case of weka arff files, labeled as '?',"
+						+ " it is not necessary to use this option. " + "However, if the data file is labeled, "
+						+ "it will show prediction results in terms of precision, recall, and f-measure for evaluation puerpose.")
+				.hasArg().required().argName("postive label value").build());
+
+		options.addOption(Option.builder("m").longOpt("clami").desc("Run CLAMI").build());
+
+		options.addOption(Option.builder("b").longOpt("clabi").desc("Run CLABI").build());
+
+		options.addOption(Option.builder("e").longOpt("experimental").desc(
+				"Options for experimenets to compare CLA/CLAMI with other cross-project defect prediction approaches by k-fold cross validation. "
+						+ "Support k-fold cross validation n times. "
+						+ "Option format: [# of folds]:[# of repetition]. E.g, -e 2:500 (Two-fold cross validation 500 repetition")
+				.hasArg().argName("#folds:#repeat").build());
+
 		options.addOption(Option.builder("a").longOpt("mlalgorithm")
-		        .desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)")
-		        .hasArg()
-		        .argName("Fully qualalified weka classifier name")
-		        .build());
-		
-		/* more options for other version of CLAMI (CLA+, CLAMI+, CLABI, CLABI+) */
-		
-		// for 'plus' option
+				.desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)").hasArg()
+				.argName("Fully qualalified weka classifier name").build());
+
 		options.addOption(Option.builder("d").longOpt("degree")
-				.desc("To represent the violation of each attribute in continuous value") 
-				.build()) ; 
+				.desc("To represent the violation of each attribute in continuous value").build());
 
 		return options;
 
 	}
-	
-	boolean parseOptions(Options options,String[] args){
+
+	boolean parseOptions(Options options, String[] args) {
 
 		CommandLineParser parser = new DefaultParser();
 
@@ -265,7 +250,7 @@ public class Main {
 			dataFilePath = cmd.getOptionValue("f");
 			labelName = cmd.getOptionValue("l");
 			posLabelValue = cmd.getOptionValue("p");
-			if(cmd.getOptionValue("c") != null)
+			if (cmd.getOptionValue("c") != null)
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
 			forCLAMI = cmd.hasOption("m");
 			forCLABI = cmd.hasOption("b");
@@ -273,7 +258,7 @@ public class Main {
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
-			isDegree = cmd.hasOption("d"); 
+			isDegree = cmd.hasOption("d");
 
 		} catch (Exception e) {
 			printHelp(options);
