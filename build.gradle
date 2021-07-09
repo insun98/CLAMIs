@@ -44,6 +44,8 @@ dependencies {
     compile 'com.google.guava:guava:19.0'
     
     implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.8'
+    implementation group: 'org.apache.poi', name: 'poi', version: '5.0.0'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.0.0'
 }
 
 //version = '0.0'
