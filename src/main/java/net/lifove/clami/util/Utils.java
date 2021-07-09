@@ -39,27 +39,26 @@ public class Utils {
 			row = sheet.createRow(0);
 			int columnCount = 0;
 			for (Object field : header) {
-
 				cell = row.createCell(columnCount++);
 				cell.setCellValue((String) field);
 			}
-
-			System.out.println("List " + Data.get(1).get(1));
-
 			for (int i = 1; i < Data.size(); i++) {
 				ArrayList<Object> arrData = Data.get(i);
 				row = sheet.createRow(i);
 				for (int k = 0; k < arrData.size(); k++) {
+					sheet.autoSizeColumn(k);
 					cell = row.createCell(k);
-					cell.setCellValue(arrData.get(k).toString());
-
+					if (arrData.get(k) instanceof String) 
+	                    cell.setCellValue((String) arrData.get(k));
+	                 else if (arrData.get(k) instanceof Integer) 
+	                    cell.setCellValue((Integer) arrData.get(k));
+	                else 
+	                	cell.setCellValue((Double) arrData.get(k));
 				}
-
 			}
 			try {
 				String strFilePath = versionName + "_Result.xlsx";
 				FileOutputStream fOut = new FileOutputStream(strFilePath);
-				
 				workbook.write(fOut);
 				workbook.close();
 			} catch (IOException e) {
