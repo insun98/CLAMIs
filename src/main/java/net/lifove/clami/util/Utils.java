@@ -28,7 +28,6 @@ public class Utils {
 	private static int number = 0;
 
 	public static void makeFile(String versionName) throws FileNotFoundException, IOException {
-		if (number > 1) {
 			XSSFWorkbook workbook = new XSSFWorkbook();
 			XSSFSheet sheet = workbook.createSheet("Result");
 			XSSFRow row = null;
@@ -67,7 +66,7 @@ public class Utils {
 			}
 
 		}
-	}
+	
 
 	/**
 	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall,
@@ -87,6 +86,7 @@ public class Utils {
 		double recall = (double) tP / (tP + fN);
 		double f1 = (2 * (precision * recall)) / (precision + recall);
 		if (!experimental) {
+			System.out.println(fileName);
 			System.out.println("TP: " + tP);
 			System.out.println("FP: " + fP);
 			System.out.println("TN: " + tN);
@@ -125,6 +125,7 @@ public class Utils {
 		double MCC = eval.matthewsCorrelationCoefficient(instances.classAttribute().indexOfValue(positiveLabel));
 
 		if (!experimental) {
+			System.out.println(fileName);
 			System.out.println("TP: " + tP);
 			System.out.println("FP: " + fP);
 			System.out.println("TN: " + tN);
@@ -142,6 +143,7 @@ public class Utils {
 		
 		
 		ArrayList<Object> subData = new ArrayList<Object>();
+		
 		subData.add(0, fileName);
 		subData.add(1, tP);
 		subData.add(2, fP);
