@@ -117,16 +117,16 @@ public class CLABI {
 					
 					// Print CLAMI results
 					
-					for(int instIdx = 0; instIdx < final_newTestInstances.numInstances(); instIdx++){
-						double final_predictedLabelIdx = final_classifier.classifyInstance(final_newTestInstances.get(instIdx));
-					System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
+					for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
+						double final_predictedLabelIdx = final_classifier.classifyInstance(instances.get(instIdx));
+				//	System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
 						
 						
 						if(!suppress) {
 							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
-									final_newTestInstances.classAttribute().value((int)final_predictedLabelIdx)	+
+									instances.classAttribute().value((int)final_predictedLabelIdx)	+
 									//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
-									", (Actual class: " + Utils.getStringValueOfInstanceLabel(final_newTestInstances,instIdx) + ") ");
+									", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
 						}
 						
 						
@@ -153,10 +153,10 @@ public class CLABI {
 					}
 					
 					Evaluation eval = new Evaluation(labeling);
-					eval.evaluateModel(final_classifier, final_newTestInstances);
+					eval.evaluateModel(final_classifier, instances);
 
 					if (TP + TN + FP + FN > 0) {
-						Utils.printEvaluationResult(TP, TN, FP, FN, eval, final_newTestInstances, positiveLabel, experimental,
+						Utils.printEvaluationResult(TP, TN, FP, FN, eval, instances, positiveLabel, experimental,
 								fileName);
 					}
 
