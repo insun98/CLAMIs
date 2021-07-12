@@ -44,6 +44,7 @@ public class CLAMI {
 		// (1) get distinct violation scores ordered by ASC
 		HashMap<Integer,String> metricIdxWithTheSameViolationScores = Utils.getMetricIndicesWithTheViolationScores(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
 		Object[] keys =  metricIdxWithTheSameViolationScores.keySet().toArray();
+		
 		if(sort==0) 
 			Arrays.sort(keys);
 		else 
