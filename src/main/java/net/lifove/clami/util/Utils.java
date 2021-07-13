@@ -195,17 +195,24 @@ public class Utils {
 				if (isDegree == true) {
 					sum = sum + 1 / (1 + Math.pow(Math.E,
 							-(instances.get(instIdx).value(attrIdx) - cutoffsForHigherValuesOfAttribute[attrIdx])));
-					K[instIdx] = sum / instances.numAttributes();
+					
 				} else {
 					if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]) {
 						K[instIdx]++;
 					}
 				}
+				
 			}
+			if(isDegree == true)
+			K[instIdx] = sum / instances.numAttributes();
 		}
-
+		double cutoffOfKForTopClusters = 0.F;
 		// compute cutoff for the top half and bottom half clusters
-		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
+		if(isDegree == true)
+			cutoffOfKForTopClusters = 0.5;
+		else
+			cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
+		
 
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			if (K[instIdx] > cutoffOfKForTopClusters)
