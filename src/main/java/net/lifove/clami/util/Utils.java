@@ -219,13 +219,14 @@ public class Utils {
 				else
 					instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA, positiveLabel));
 			}
-		}else {
-		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
-			if (K[instIdx] > cutoffOfKForTopClusters)
-				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
-			else
-				instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA, positiveLabel));
 		}
+		else {
+			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
+				if (K[instIdx] > cutoffOfKForTopClusters)
+					instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
+				else
+					instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA, positiveLabel));
+			}
 		}
 		return instancesByCLA;
 	}
