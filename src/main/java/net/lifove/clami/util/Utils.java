@@ -212,13 +212,20 @@ public class Utils {
 			cutoffOfKForTopClusters = 0.5;
 		else
 			cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
-		
-
+		if(isDegree == true) {
+			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
+				if (K[instIdx] >= cutoffOfKForTopClusters)
+					instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
+				else
+					instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA, positiveLabel));
+			}
+		}else {
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			if (K[instIdx] > cutoffOfKForTopClusters)
 				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 			else
 				instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA, positiveLabel));
+		}
 		}
 		return instancesByCLA;
 	}
