@@ -12,6 +12,8 @@ import java.util.HashSet;
 
 import org.apache.commons.math3.stat.StatUtils;
 import com.google.common.primitives.Doubles;
+
+import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -79,18 +81,17 @@ public class Utils {
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
-	public static void printEvaluationResultCLA(int tP, int tN, int fP, int fN, boolean experimental, String fileName)
-			throws FileNotFoundException, IOException {
+	public static void printEvaluationResultCLA(int TP,int  TN, int FP, int FN, boolean experimental, String fileName) {
 
-		double precision = (double) tP / (tP + fP);
-		double recall = (double) tP / (tP + fN);
+		double precision = (double) TP / (TP + FP);
+		double recall = (double)TP / (TP + FN);
 		double f1 = (2 * (precision * recall)) / (precision + recall);
 		if (!experimental) {
 			System.out.println(fileName);
-			System.out.println("TP: " + tP);
-			System.out.println("FP: " + fP);
-			System.out.println("TN: " + tN);
-			System.out.println("FN: " + fN);
+			System.out.println("TP: " + TP);
+			System.out.println("FP: " + FP);
+			System.out.println("TN: " + TN);
+			System.out.println("FN: " + FN);
 
 			System.out.println("precision: " + precision);
 			System.out.println("recall: " + recall);
@@ -100,12 +101,12 @@ public class Utils {
 		
 		
 		ArrayList<Object> subData = new ArrayList<Object>();
-		System.out.println(fileName);
+		
 		subData.add(0, fileName);
-		subData.add(1, tP);
-		subData.add(2, fP);
-		subData.add(3, tN);
-		subData.add(4, fN);
+		subData.add(1, TP);
+		subData.add(2, FP);
+		subData.add(3, TN);
+		subData.add(4, FN);
 		subData.add(5, precision);
 		subData.add(6, recall);
 		subData.add(7, f1);
@@ -116,9 +117,26 @@ public class Utils {
 
 	}
 
-	public static void printEvaluationResult(int tP, int tN, int fP, int fN, Evaluation eval, Instances instances,
-			String positiveLabel, boolean experimental, String fileName) throws IOException {
+	public static void printEvaluationResult(Instances instances,Instances testInstances, Instances trainingInstances,Classifier classifier, String positiveLabel, boolean experimental, String fileName) {
 
+		Evaluation eval = null;
+		try {
+			eval = new Evaluation(trainingInstances);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			eval.evaluateModel(classifier, testInstances);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		double TP = eval.truePositiveRate(instances.classAttribute().indexOfValue(positiveLabel));
+		double FP = eval.falsePositiveRate(instances.classAttribute().indexOfValue(positiveLabel));
+		double TN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
+		double FN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
+		
 		double precision = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
 		double recall = eval.recall(instances.classAttribute().indexOfValue(positiveLabel));
 		double f1 = eval.fMeasure(instances.classAttribute().indexOfValue(positiveLabel));
@@ -127,10 +145,10 @@ public class Utils {
 
 		if (!experimental) {
 			System.out.println(fileName);
-			System.out.println("TP: " + tP);
-			System.out.println("FP: " + fP);
-			System.out.println("TN: " + tN);
-			System.out.println("FN: " + fN);
+			System.out.println("TP: " + TP);
+			System.out.println("FP: " + FP);
+			System.out.println("TN: " + TN);
+			System.out.println("FN: " + FN);
 			
 
 			System.out.println("precision: " + precision);
@@ -147,10 +165,10 @@ public class Utils {
 		ArrayList<Object> subData = new ArrayList<Object>();
 		
 		subData.add(0, fileName);
-		subData.add(1, tP);
-		subData.add(2, fP);
-		subData.add(3, tN);
-		subData.add(4, fN);
+		subData.add(1, TP);
+		subData.add(2, FP);
+		subData.add(3, TN);
+		subData.add(4, FN);
 		subData.add(5, precision);
 		subData.add(6, recall);
 		subData.add(7, f1);

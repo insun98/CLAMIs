@@ -1,200 +1,167 @@
 package net.lifove.clami;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-
 import net.lifove.clami.util.Utils;
 import weka.classifiers.Classifier;
-import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
-public class CLABI {
-	
-	private static List<Double> probabilityOfCLAMIIdx = new ArrayList<Double>();
-	private static List<Double> probabilityOfCLABIIdx = new ArrayList<Double>();
-	private static List<Double> CLAMIIdx = new ArrayList<Double>();
-	private static List<Double> CLABIIdx = new ArrayList<Double>();
+public class CLABI implements ICLAMI {
 
-	/**
-	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get
-	 * instancesByCLA use getCLAResult.
-	 * 
-	 * @param testInstances
-	 * @param instancesByCLA
-	 * @param positiveLabel
-	 */
-	public static void getCLABIResult(Instances testInstances, Instances instances, String positiveLabel,
-			double percentileCutoff, boolean suppress, String mlAlg, boolean isDegree, int sort, boolean forCLABI,
-			String fileName) {
-		getCLABIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, false, mlAlg, isDegree,
-				sort, forCLABI, fileName); // no experimental as default
+	private Instances trainingInstances;
+	private Instances testInstances;
+	private CLA cla = new CLA();
+	private static Instances instancesByCLA;
+	private String mlAlg;
+	boolean isExperimental;
+	private HashMap<Integer, String> metricIdxWithTheSameViolationScores;
+	private static List<Double> probabilityOfCLAMIIdx;
+	private static List<Double> probabilityOfCLABIIdx;
+	private static List<Double> CLAMIIdx;
+	private static List<Double> CLABIIdx;
+	List<Double> probabilityOfIdx = new ArrayList<Double>();
+	List<Double> predictedIdx = new ArrayList<Double>();
+	Classifier classifier;
 
+	CLABI(String mlAlg, boolean isExperimental) {
+		trainingInstances = null;
+		testInstances = null;
+		instancesByCLA = null;
+		this.mlAlg = mlAlg;
+		this.isExperimental = isExperimental;
+		metricIdxWithTheSameViolationScores = null;
+		probabilityOfCLAMIIdx = new ArrayList<Double>();
+		probabilityOfCLABIIdx = new ArrayList<Double>();
+		CLAMIIdx = new ArrayList<Double>();
+		CLABIIdx = new ArrayList<Double>();
 	}
 
-	/**
-	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get
-	 * instancesByCLA use getCLAResult.
-	 * 
-	 * @param testInstances
-	 * @param instancesByCLA
-	 * @param positiveLabel
-	 */
-	public static void getCLABIResult(Instances testInstances, Instances instances, String positiveLabel,
-			double percentileCutoff, boolean suppress, boolean experimental, String mlAlg, boolean isDegree, int sort,
-			boolean forCLABI, String fileName) {
-		probabilityOfCLAMIIdx.removeAll(probabilityOfCLAMIIdx) ;
-		probabilityOfCLABIIdx.removeAll(probabilityOfCLABIIdx) ;
-		CLAMIIdx.removeAll(CLAMIIdx) ;
-		CLABIIdx.removeAll(CLABIIdx) ;
-		Instances instancesByCLA = Utils.getInstancesByCLA(instances, percentileCutoff, positiveLabel, isDegree);
-		Instances final_newTestInstances = instancesByCLA;
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
+			boolean isDegree, String fileName) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
+	}
 
-		// call getCLAMIResult with Descending order (sort = 1)
-		CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental, mlAlg,
-				isDegree, 1, forCLABI, fileName);
-		CLABIIdx.addAll(CLAMI.predictedLabelIdx);
-		probabilityOfCLABIIdx.addAll(CLAMI.probabilityOfIdx);
-		
-//		System.out.println("=========CLABIIdx==========");
-//		for (int i=0;i<CLABIIdx.size();i++) {
-//			System.out.println(CLABIIdx.get(i));
-//		}
-//		
-//		System.out.println("=========probabilityOfCLABIIdx==========");
-//		for (int i=0;i<probabilityOfCLABIIdx.size();i++) {
-//			System.out.println(probabilityOfCLABIIdx.get(i));
-//		}
-//		
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
+			boolean experimental, boolean isDegree, String fileName) {
+		if (isDegree)
+			clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
+		else
+			clustering(instances, percentileCutoff, positiveLabel);
 
-		// if Descending result is null, just execute CLAMI and return
+		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instancesByCLA, percentileCutoff);
+
+		metricIdxWithTheSameViolationScores = Utils.getMetricIndicesWithTheViolationScores(instancesByCLA,
+				cutoffsForHigherValuesOfAttribute, positiveLabel);
+
+		Object[] keys = metricIdxWithTheSameViolationScores.keySet().toArray();
+		Object[] descending_keys = metricIdxWithTheSameViolationScores.keySet().toArray();
+
+		Arrays.sort(descending_keys, Collections.reverseOrder());
+		getTrainingTestSet(descending_keys, instances, positiveLabel, percentileCutoff);
+		getProbabiltyOfIdx();
+		probabilityOfCLABIIdx.addAll(probabilityOfIdx);
+
+		CLABIIdx.addAll(predictedIdx);
+
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental,
-					mlAlg, isDegree, 0, false, fileName);
+			CLAMI clami = new CLAMI(mlAlg, isExperimental);
+			clami.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 			return;
 
 		}
-		// else if Descending result is not null, Execute CLABI
-		else {
-			// call getCLAMIResult with Ascending order (sort = 0)
-			CLAMI.getCLAMIResult(testInstances, instances, positiveLabel, percentileCutoff, suppress, experimental,
-					mlAlg, isDegree, 0, forCLABI, fileName);
-			CLAMIIdx.addAll(CLAMI.predictedLabelIdx);
-			probabilityOfCLAMIIdx.addAll(CLAMI.probabilityOfIdx);
-			
-//			System.out.println("=========CLAMIIdx==========");
-//			for (int i=0;i<CLAMIIdx.size();i++) {
-//				System.out.println(CLAMIIdx.get(i));
-//			}
-//			
-//			System.out.println("=========probabilityOfCLAMIIdx==========");
-//			for (int i=0;i<probabilityOfCLAMIIdx.size();i++) {
-//				System.out.println(probabilityOfCLAMIIdx.get(i));
-//			}
-			
-			
 
-			Instances labeling = getLabeling(final_newTestInstances, CLAMIIdx, CLABIIdx, probabilityOfCLAMIIdx,
-					probabilityOfCLABIIdx, positiveLabel);
-			
-//			System.out.println("==========labeling==========");
-//			for (int i=0;i<labeling.size();i++) {
-//				System.out.println(labeling.get(i).classValue());
-//			}
-			
-			
+		Arrays.sort(keys);
+		getTrainingTestSet(keys, instances, positiveLabel, percentileCutoff);
+		getProbabiltyOfIdx();
+		probabilityOfCLAMIIdx.addAll(probabilityOfIdx);
+		CLAMIIdx.addAll(predictedIdx);
 
-			int TP = 0, FP = 0, TN = 0, FN = 0;
-
-			// double[] final_prediction;
-			String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
-			// check if there are no instances in any one of two classes.
-			if(labeling.attributeStats(labeling.classIndex()).nominalCounts[0]!=0 &&
-					labeling.attributeStats(labeling.classIndex()).nominalCounts[1]!=0){
-			
-				try {
-					Classifier final_classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
-					final_classifier.buildClassifier(labeling);
-					
-					// Print CLAMI results
-					
-					for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-						double final_predictedLabelIdx = final_classifier.classifyInstance(instances.get(instIdx));
-				//	System.out.println("final predicted Label Index : " + final_predictedLabelIdx);
-						
-						
-						if(!suppress) {
-							System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
-									instances.classAttribute().value((int)final_predictedLabelIdx)	+
-									//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
-									", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
-						}
-						
-						
-					
-						// compute T/F/P/N for the original instances labeled.
-						if(!Double.isNaN(instances.get(instIdx).classValue())){
-							
-							if(final_predictedLabelIdx==instances.get(instIdx).classValue()){
-								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
-									TP++;
-								}
-								else {
-									TN++;
-								}
-							}else{
-								if(final_predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel)) {
-									FP++;
-								}
-								else {
-									FN++;
-								}
-							}
-						}
-					}
-					
-					Evaluation eval = new Evaluation(labeling);
-					eval.evaluateModel(final_classifier, instances);
-
-					if (TP + TN + FP + FN > 0) {
-						Utils.printEvaluationResult(TP, TN, FP, FN, eval, instances, positiveLabel, experimental,
-								fileName);
-					}
-
-					else if (suppress)
-						System.out.println(
-								"No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
-
-				} catch (Exception e) {
-					System.err.println(
-							"Specify the correct Weka machine learing classifier with a fully qualified name. E.g., weka.classifiers.functions.Logistic");
-					e.printStackTrace();
-					System.exit(0);
-				}
-			} else {
-				System.err.println(
-						"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
-			}
-
-		}
-
+		getLabeling(instances, positiveLabel);
+		getPredictedLabels(suppress, instances);
+		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}
 
-	/***
-	 * To solve the conflict between ascending orders label result and descending
-	 * order label result
-	 * 
-	 * @param instances
-	 * @param CLAMIIdx
-	 * @param CLABIIdx
-	 * @param probabilityOfCLAMIIdx
-	 * @param probabilityOfCLABIIdx
-	 * @param positiveLabel
-	 * @return
-	 */
-	private static Instances getLabeling(Instances instances, List<Double> CLAMIIdx, List<Double> CLABIIdx,
-			List<Double> probabilityOfCLAMIIdx, List<Double> probabilityOfCLABIIdx, String positiveLabel) {
+	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
+		instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel);
+		return null;
+	}
 
-		Instances instancesByCLA = new Instances(instances);
+	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
+		instancesByCLA = cla.clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
+		return null;
+	}
+
+	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
+		trainingInstances = null;
+		testInstances = null;
+
+		for (Object key : keys) {
+
+			String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key)
+					+ (instancesByCLA.classIndex() + 1);
+			trainingInstances = Utils.getInstancesByRemovingSpecificAttributes(instancesByCLA, selectedMetricIndices,
+					true);
+			testInstances = Utils.getInstancesByRemovingSpecificAttributes(instances, selectedMetricIndices, true);
+
+			// Instance selection
+			double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(trainingInstances,
+					percentileCutoff); // get higher value cutoffs from the metric-selected dataset
+			String instIndicesNeedToRemove = Utils.getSelectedInstances(trainingInstances,
+					cutoffsForHigherValuesOfAttribute, positiveLabel);
+			trainingInstances = Utils.getInstancesByRemovingSpecificInstances(trainingInstances,
+					instIndicesNeedToRemove, false);
+
+			if (trainingInstances.numInstances() != 0)
+				break;
+		}
+
+		if (trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[0] != 0
+				&& trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[1] != 0)
+			return;
+		else
+			System.err.println(
+					"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+	}
+
+	public void getProbabiltyOfIdx() {
+		probabilityOfIdx.removeAll(probabilityOfIdx);
+		predictedIdx.removeAll(predictedIdx);
+		double[] prediction;
+		String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
+
+		try {
+			classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
+			classifier.buildClassifier(trainingInstances);
+
+			for (int instIdx = 0; instIdx < testInstances.numInstances(); instIdx++) {
+				double LabelIdx = classifier.classifyInstance(testInstances.get(instIdx));
+				predictedIdx.add(LabelIdx);
+
+				prediction = classifier.distributionForInstance(testInstances.get(instIdx)); // probability of clean and
+																								// buggy
+
+				double max = prediction[0]; // take first index of prediction as max
+
+				for (int i = 0; i < prediction.length; i++) {
+
+					if (max < prediction[i])
+						max = prediction[i]; // find max
+				}
+
+				probabilityOfIdx.add(max);
+			}
+		} catch (Exception e) {
+			System.err.println(
+					"Specify the correct Weka machine learing classifier with a fully qualified name. E.g., weka.classifiers.functions.Logistic");
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+
+	private static void getLabeling(Instances instances, String positiveLabel) {
 
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 
@@ -221,6 +188,37 @@ public class CLABI {
 			}
 		}
 
-		return instancesByCLA;
+	}
+
+	public void getPredictedLabels(boolean suppress, Instances instances) {
+
+		String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
+
+		try {
+			classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
+			classifier.buildClassifier(instancesByCLA);
+
+			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
+				double LabelIdx = classifier.classifyInstance(instances.get(instIdx));
+				if (!suppress)
+					System.out.println("CLAMI: Instance " + (instIdx + 1) + " predicted as, "
+							+ instances.classAttribute().value((int) LabelIdx) +
+							", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") ");
+
+			}
+
+		} catch (Exception e) {
+			System.err.println(
+					"Specify the correct Weka machine learing classifier with a fully qualified name. E.g., weka.classifiers.functions.Logistic");
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+
+	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
+			String positiveLabel) {
+		Utils.printEvaluationResult(instances, instances, instancesByCLA, classifier, positiveLabel, experimental,
+				fileName);
+
 	}
 }
