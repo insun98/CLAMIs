@@ -32,8 +32,7 @@ public class Main {
 	String labelName;
 	String posLabelValue;
 	double percentileCutoff = 50;
-	boolean forCLAMI = false;
-	boolean forCLABI = false;
+	String version="";
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
@@ -58,6 +57,7 @@ public class Main {
 				printHelp(options);
 				return;
 			}
+			
 
 			// exit when percentile range is not correct (it should be 0 < range <= 100)
 			if (percentileCutoff <= 0 || 100 < percentileCutoff) {
@@ -129,9 +129,9 @@ public class Main {
 
 			}
 		}
-		if (forCLABI)
+		if (version.equals("CLABI"))
 			Utils.makeFile("CLABI");
-		else if (forCLAMI)
+		else if (version.equals("CLAMI"))
 			Utils.makeFile("CLAMI");
 		else
 			Utils.makeFile("CLA");
@@ -169,21 +169,21 @@ public class Main {
 
 	void prediction(Instances instances, String positiveLabel, boolean isExperimental, String fileName)
 			throws FileNotFoundException, IOException {
-		if (forCLAMI && forCLABI) {
+		if (version.equals("CLAMI")&&version.equals("CLABI")){
 			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
 			return;
 		}
-		if (forCLABI) {
+		if (version.equals("CLABI")) {
 			
 			clamiApproach = new CLABI(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
 
-		else if (forCLAMI) {
+		else if (version.equals("CLAMI")) {
 			clamiApproach = new CLAMI(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
-		else {
+		else  {
 			claApproach = new CLA();
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
@@ -223,10 +223,12 @@ public class Main {
 						+ " it is not necessary to use this option. " + "However, if the data file is labeled, "
 						+ "it will show prediction results in terms of precision, recall, and f-measure for evaluation puerpose.")
 				.hasArg().required().argName("postive label value").build());
-
-		options.addOption(Option.builder("m").longOpt("clami").desc("Run CLAMI").build());
-
-		options.addOption(Option.builder("b").longOpt("clabi").desc("Run CLABI").build());
+		
+		options.addOption(Option.builder("v").longOpt("version").desc(
+				"Options for selecting version of the program(Default is CLA). Insert  CLAMI to run CLAMI "+
+				"CLABI for CLABI")
+				.hasArg()
+				.argName("version of the program").build());
 
 		options.addOption(Option.builder("e").longOpt("experimental").desc(
 				"Options for experimenets to compare CLA/CLAMI with other cross-project defect prediction approaches by k-fold cross validation. "
@@ -258,8 +260,8 @@ public class Main {
 			posLabelValue = cmd.getOptionValue("p");
 			if (cmd.getOptionValue("c") != null)
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
-			forCLAMI = cmd.hasOption("m");
-			forCLABI = cmd.hasOption("b");
+			if(cmd.getOptionValue("v")!=null)
+				version = cmd.getOptionValue("v");
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
