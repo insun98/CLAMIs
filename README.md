@@ -1,12 +1,16 @@
-# CLAMI_set
+## CLAMIs
 
-CLAMI를 버전별로 정리하기 위한 저장소
+* CLAMI is for an unsupercised defect prediction. **CLAMIs** has six versions of CLAMI. (CLA, CLA+, CLAMI, CLAMI+, CLABI, CLABI+) 
 
-* ***branch*** 
-  * **main**: original CLAMI 
-  * **clami_dir**: clami with `-t`option && can excute under the directory files 
-  * **clami_plus**: 
-  * **clami_bi**: 
-  * **clam** 
-  * **clam_plus** 
+
+
+## How to run 
+
+Refer to 'help' option. 
+
+- On Linux/Mac, see Help
+  - ./CLAMI -h
+
+- On Windows, see Help
+  - CLAMI.bat -h
 
