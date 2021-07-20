@@ -39,8 +39,6 @@ public class Main {
 	String mlAlg = "";
 	boolean isDegree = false;
 	int sort = 0;
-	ICLA claApproach;
-	ICLAMI clamiApproach;
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 
@@ -169,16 +167,19 @@ public class Main {
 
 	void prediction(Instances instances, String positiveLabel, boolean isExperimental, String fileName)
 			throws FileNotFoundException, IOException {
+
+		ICLA claApproach;
+		ICLAMI clamiApproach;
+		
 		if (version.equals("CLAMI")&&version.equals("CLABI")){
 			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
 			return;
 		}
+		
 		if (version.equals("CLABI")) {
-			
 			clamiApproach = new CLABI(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
-
 		else if (version.equals("CLAMI")) {
 			clamiApproach = new CLAMI(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
@@ -187,6 +188,7 @@ public class Main {
 			claApproach = new CLA();
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
+		
 	}
 
 	private void printHelp(Options options) {
