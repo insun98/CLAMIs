@@ -7,14 +7,12 @@ import weka.classifiers.Classifier;
 import weka.core.Instances;
 
 public class CLAMI implements ICLAMI {
-	
-	private Instances trainingInstances;
-	private Instances testInstances;
-	private CLA cla = new CLA();
-	private Instances instancesByCLA;
-	private String mlAlg;
+	protected Instances trainingInstances;
+	protected Instances testInstances;
+	protected Instances instancesByCLA;
+	protected String mlAlg;
 	boolean isExperimental;
-	private HashMap<Integer, String> metricIdxWithTheSameViolationScores;
+	protected HashMap<Integer, String> metricIdxWithTheSameViolationScores;
 	Classifier classifier;
 	
 	/**
@@ -59,10 +57,8 @@ public class CLAMI implements ICLAMI {
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, boolean isDegree, String fileName) {
 		instancesByCLA = new Instances(instances);
-		if (isDegree)
-			clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
-		else
-			clustering(instances, percentileCutoff, positiveLabel);
+		
+		clustering(instances, percentileCutoff, positiveLabel);
 
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instancesByCLA, percentileCutoff);
 
@@ -84,18 +80,8 @@ public class CLAMI implements ICLAMI {
 	 * @param positiveLabel positive label string value
 	 */
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
+		CLA cla = new CLA();
 		instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel);
-		return null;
-	}
-	
-	/**
-	 * To do clustering
-	* @param instances
-	 * @param percentileCutoff cutoff percentile for top and bottom clusters
-	 * @param positiveLabel positive label string value
-	 */
-	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
-		instancesByCLA = cla.clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
 		return null;
 	}
 	
