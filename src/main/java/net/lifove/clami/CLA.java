@@ -10,11 +10,30 @@ import weka.core.Instances;
 public class CLA implements ICLA {
 	private Instances instancesByCLA = null;
 
+	/**
+	 * Get CLA result
+	 * @param instances
+	 * @param percentileCutoff; cutoff percentile for cluster
+	 * @param positiveLabel; string value of positive label 
+	 * @param supress detailed prediction results
+	 * @param isDegree; boolean value whether plus version or not 
+	 * @param fileName; string value of file name  
+	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean isDegree, String fileName) {
 		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
 	}
 
+	/**
+	 * Get CLA result
+	 * @param instances
+	 * @param percentileCutoff; cutoff percentile for cluster
+	 * @param positiveLabel; string value of positive label 
+	 * @param supress detailed prediction results
+	 * @param experimental; boolean value whether experimental or not 
+	 * @param isDegree; boolean value whether plus version or not 
+	 * @param fileName; string value of file name  
+	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, boolean isDegree, String fileName) {
 
@@ -25,6 +44,12 @@ public class CLA implements ICLA {
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}
 
+	/**
+	 * Cluster with percentileCutoff. Set class value to positive if K is higher than cutoff of cluster.
+	 * @param instances
+	 * @param percentileCutoff; cutoff percentile for cluster 
+	 * @param positiveLabel; string value of positive label 
+	 */
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
 
 		instancesByCLA = new Instances(instances);
@@ -53,11 +78,18 @@ public class CLA implements ICLA {
 		return instancesByCLA;
 	}
 
+	/**
+	 * Cluster with percentileCutoff. Set class value to positive if K is higher than cutoff of cluster. 
+	 * This is for continuous value which is 'plus' version. 
+	 * @param instances
+	 * @param percentileCutoff; cutoff percentile for cluster 
+	 * @param positiveLabel; string value of positive label 
+	 */
 	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
 
-		Instances instancesByCLA = new Instances(instances);
-		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff);
-		Double[] K = new Double[instances.numInstances()];
+		Instances instancesByCLA = new Instances(instances); 
+		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff); 
+		Double[] K = new Double[instances.numInstances()]; 
 
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			K[instIdx] = 0.0;
@@ -84,6 +116,15 @@ public class CLA implements ICLA {
 
 	}
 
+	/**
+	 * Calculate the final result and print the prediction result performance 
+	 * in terms of TP, TN, FP, FN, precision, recall, and f1.
+	 * @param instances
+	 * @param experimental; boolean value whether experimental or not 
+	 * @param fileName; string value of file name  
+	 * @param supress detailed prediction results
+	 * @param positiveLabel; string value of positive label 
+	 */
 	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
 			String positiveLabel) {
 
