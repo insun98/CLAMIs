@@ -33,6 +33,8 @@ public class Main {
 	String posLabelValue;
 	double percentileCutoff = 50;
 	String version="";
+	//boolean isClami="";
+	//boolean isClabi="";
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
@@ -228,7 +230,8 @@ public class Main {
 		
 		options.addOption(Option.builder("v").longOpt("version").desc(
 				"Options for selecting version of the program(Default is CLA). Insert  CLAMI to run CLAMI "+
-				"CLABI for CLABI")
+				"CLABI for CLABI. " +
+				"(Add P at the end to run plus version)")
 				.hasArg()
 				.argName("version of the program").build());
 
@@ -242,12 +245,12 @@ public class Main {
 				.desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)").hasArg()
 				.argName("Fully qualalified weka classifier name").build());
 
-		options.addOption(Option.builder("d").longOpt("degree")
-				.desc("To represent the violation of each attribute in continuous value").build());
+		//options.addOption(Option.builder("d").longOpt("degree")
+				//.desc("To represent the violation of each attribute in continuous value").build());
 
 		return options;
 
-	}
+	} 
 
 	boolean parseOptions(Options options, String[] args) {
 
@@ -268,7 +271,7 @@ public class Main {
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
-			isDegree = cmd.hasOption("d");
+			//isDegree = cmd.hasOption("d");
 
 		} catch (Exception e) {
 			printHelp(options);
