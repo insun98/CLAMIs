@@ -23,55 +23,60 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Utils {
+	
 	private static ArrayList<ArrayList<Object>> Data = new ArrayList<ArrayList<Object>>();
 
 	private static int number = 0;
 
+	/**
+	 * To create a result file 
+	 * @param versionName
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public static void makeFile(String versionName) throws FileNotFoundException, IOException {
-			XSSFWorkbook workbook = new XSSFWorkbook();
-			XSSFSheet sheet = workbook.createSheet("Result");
-			XSSFRow row = null;
-			XSSFCell cell = null;
+		XSSFWorkbook workbook = new XSSFWorkbook();
+		XSSFSheet sheet = workbook.createSheet("Result");
+		XSSFRow row = null;
+		XSSFCell cell = null;
 
-			Object[] header = { "File Name", "TP", "FP", "TN", "FN", "Precision", "Recall", "F-Measure", "AUC", "MCC" };
+		Object[] header = { "File Name", "TP", "FP", "TN", "FN", "Precision", "Recall", "F-Measure", "AUC", "MCC" };
 
-			row = sheet.createRow(0);
-			int columnCount = 0;
-			for (Object field : header) {
-				cell = row.createCell(columnCount++);
-				cell.setCellValue((String) field);
-			}
-			for (int i = 1; i <= Data.size(); i++) {
-				ArrayList<Object> arrData = Data.get(i-1);
-				row = sheet.createRow(i);
-				for (int k = 0; k < arrData.size(); k++) {
-					sheet.autoSizeColumn(k);
-					cell = row.createCell(k);
-					if (arrData.get(k) instanceof String) 
-	                    cell.setCellValue((String) arrData.get(k));
-	                 else if (arrData.get(k) instanceof Integer) 
-	                    cell.setCellValue((Integer) arrData.get(k));
-	                else 
-	                	cell.setCellValue((Double) arrData.get(k));
-				}
-			}
-			try {
-				String strFilePath = versionName + "_Result.xlsx";
-				FileOutputStream fOut = new FileOutputStream(strFilePath);
-				workbook.write(fOut);
-				workbook.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(0);
-			}
-
+		row = sheet.createRow(0);
+		int columnCount = 0;
+		for (Object field : header) {
+			cell = row.createCell(columnCount++);
+			cell.setCellValue((String) field);
 		}
-	
+		for (int i = 1; i <= Data.size(); i++) {
+			ArrayList<Object> arrData = Data.get(i-1);
+			row = sheet.createRow(i);
+			for (int k = 0; k < arrData.size(); k++) {
+				sheet.autoSizeColumn(k);
+				cell = row.createCell(k);
+				if (arrData.get(k) instanceof String) 
+					cell.setCellValue((String) arrData.get(k));
+				else if (arrData.get(k) instanceof Integer) 
+					cell.setCellValue((Integer) arrData.get(k));
+				else 
+					cell.setCellValue((Double) arrData.get(k));
+			}
+		}
+		try {
+			String strFilePath = versionName + "_Result.xlsx";
+			FileOutputStream fOut = new FileOutputStream(strFilePath);
+			workbook.write(fOut);
+			workbook.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+	}
+
 
 	/**
-	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall,
-	 * and f1.
-	 * 
+	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall, and f1. 
 	 * @param tP
 	 * @param tN
 	 * @param fP
@@ -96,10 +101,10 @@ public class Utils {
 			System.out.println("f1: " + f1);
 		} else
 			System.out.print(precision + "," + recall + "," + f1);
-		
-		
+
+
 		ArrayList<Object> subData = new ArrayList<Object>();
-		
+
 		subData.add(0, fileName);
 		subData.add(1, TP);
 		subData.add(2, FP);
@@ -115,6 +120,16 @@ public class Utils {
 
 	}
 
+	/**
+	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall, f1, AUC, and MCC. 
+	 * @param instances
+	 * @param testInstances
+	 * @param trainingInstances
+	 * @param classifier
+	 * @param positiveLabel
+	 * @param experimental
+	 * @param fileName
+	 */
 	public static void printEvaluationResult(Instances instances,Instances testInstances, Instances trainingInstances,Classifier classifier, String positiveLabel, boolean experimental, String fileName) {
 
 		Evaluation eval = null;
@@ -129,7 +144,7 @@ public class Utils {
 		double FP = eval.falsePositiveRate(instances.classAttribute().indexOfValue(positiveLabel));
 		double TN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
 		double FN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
-		
+
 		double precision = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
 		double recall = eval.recall(instances.classAttribute().indexOfValue(positiveLabel));
 		double f1 = eval.fMeasure(instances.classAttribute().indexOfValue(positiveLabel));
@@ -142,7 +157,7 @@ public class Utils {
 			System.out.println("FP: " + FP);
 			System.out.println("TN: " + TN);
 			System.out.println("FN: " + FN);
-			
+
 
 			System.out.println("precision: " + precision);
 			System.out.println("recall: " + recall);
@@ -153,10 +168,10 @@ public class Utils {
 
 		} else 
 			System.out.print(precision + "," + recall + "," + f1 + "," + AUC + "," + MCC);
-		
-		
+
+
 		ArrayList<Object> subData = new ArrayList<Object>();
-		
+
 		subData.add(0, fileName);
 		subData.add(1, TP);
 		subData.add(2, FP);
@@ -211,7 +226,7 @@ public class Utils {
 		for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
 			if (attrIdx == instances.classIndex()) {
 				violations[attrIdx] = instances.numInstances(); // make this as max to ignore since our concern is
-																// minimum violation.
+				// minimum violation.
 				continue;
 			}
 
@@ -221,7 +236,7 @@ public class Utils {
 					violations[attrIdx]++;
 				} else if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
 						&& instances.get(instIdx).classValue() == instances.classAttribute()
-								.indexOfValue(getNegLabel(instances, positiveLabel))) {
+						.indexOfValue(getNegLabel(instances, positiveLabel))) {
 					violations[attrIdx]++;
 				}
 			}
@@ -271,7 +286,7 @@ public class Utils {
 					violations[instIdx]++;
 				} else if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
 						&& instances.get(instIdx).classValue() == instances.classAttribute()
-								.indexOfValue(getNegLabel(instances, positiveLabel))) {
+						.indexOfValue(getNegLabel(instances, positiveLabel))) {
 					violations[instIdx]++;
 				}
 			}
