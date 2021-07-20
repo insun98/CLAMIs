@@ -25,7 +25,12 @@ public class CLABI implements ICLAMI {
 	List<Double> probabilityOfIdx = new ArrayList<Double>();
 	List<Double> predictedIdx = new ArrayList<Double>();
 	Classifier classifier;
-
+	
+	/**
+	 * Constructor
+	 * @param mlAlg: machine learning algorithm
+	 * @param isExperimental: to check if experiment option is on
+	 */
 	CLABI(String mlAlg, boolean isExperimental) {
 		trainingInstances = null;
 		testInstances = null;
@@ -38,12 +43,32 @@ public class CLABI implements ICLAMI {
 		CLAMIIdx = new ArrayList<Double>();
 		CLABIIdx = new ArrayList<Double>();
 	}
-
+	
+	/**
+	 * Get CLABI result
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 * @param suppress detailed prediction results
+	 * @param isDegree: to get if clustering has to done with continuous values
+	 * @param fileName: name of the running file
+	 * @return instances labeled by CLAMI
+	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean isDegree, String fileName) {
 		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
 	}
-
+	
+	/**
+	 * Get CLABI result
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 * @param suppress detailed prediction results
+	 * @param isDegree: to get if clustering has to done with continuous values
+	 * @param fileName: name of the running file
+	 * @return instances labeled by CLAMI
+	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, boolean isDegree, String fileName) {
 		if (isDegree)
@@ -83,17 +108,36 @@ public class CLABI implements ICLAMI {
 		getPredictedLabels(suppress, instances);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}
-
+	
+	/**
+	 * To do clustering
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
 		instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel);
 		return null;
 	}
-
+	
+	/**
+	 * To do clustering
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
 	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
 		instancesByCLA = cla.clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
 		return null;
 	}
 
+	/**
+	 * Get Training and Test Set after metric and instance selection 
+	 * @param keys: MVS
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
 	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 		trainingInstances = null;
 		testInstances = null;
@@ -125,7 +169,10 @@ public class CLABI implements ICLAMI {
 			System.err.println(
 					"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
 	}
-
+	
+	/**
+	 * Get predicted index and the probability of it
+	 */
 	public void getProbabiltyOfIdx() {
 		probabilityOfIdx.removeAll(probabilityOfIdx);
 		predictedIdx.removeAll(predictedIdx);
@@ -160,7 +207,12 @@ public class CLABI implements ICLAMI {
 			System.exit(0);
 		}
 	}
-
+	
+	/**
+	 * Get Final TrainingModel
+	 * @param instances
+	 * @param positiveLabel
+	 */
 	private static void getLabeling(Instances instances, String positiveLabel) {
 
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
@@ -190,6 +242,11 @@ public class CLABI implements ICLAMI {
 
 	}
 
+	/**
+	 * Get Final predicted labels
+	 * @param suppress
+	 * @param get final labeling
+	 */
 	public void getPredictedLabels(boolean suppress, Instances instances) {
 
 		String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
@@ -214,7 +271,15 @@ public class CLABI implements ICLAMI {
 			System.exit(0);
 		}
 	}
-
+	
+	/**
+	 * Get the result printed
+	 * @param instances
+	 * @param isExperimental: to check if experiment option is on
+	 * @param fileName: name of the running file
+	 * @param suppress detailed prediction results
+	 * @param positiveLabel positive label string value
+	 */
 	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
 			String positiveLabel) {
 		Utils.printEvaluationResult(instances, instances, instancesByCLA, classifier, positiveLabel, experimental,

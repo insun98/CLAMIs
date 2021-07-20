@@ -7,7 +7,7 @@ import weka.classifiers.Classifier;
 import weka.core.Instances;
 
 public class CLAMI implements ICLAMI {
-
+	
 	private Instances trainingInstances;
 	private Instances testInstances;
 	private CLA cla = new CLA();
@@ -16,7 +16,12 @@ public class CLAMI implements ICLAMI {
 	boolean isExperimental;
 	private HashMap<Integer, String> metricIdxWithTheSameViolationScores;
 	Classifier classifier;
-
+	
+	/**
+	 * Constructor
+	 * @param mlAlg: machine learning algorithm
+	 * @param isExperimental: to check if experiment option is on
+	 */
 	CLAMI(String mlAlg, boolean isExperimental) {
 		trainingInstances = null;
 		testInstances = null;
@@ -25,12 +30,32 @@ public class CLAMI implements ICLAMI {
 		this.isExperimental = isExperimental;
 		metricIdxWithTheSameViolationScores = null;
 	}
-
+	
+	/**
+	 * Get CLAMI result
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 * @param suppress detailed prediction results
+	 * @param isDegree: to get if clustering has to done with continuous values
+	 * @param fileName: name of the running file
+	 * @return instances labeled by CLAMI
+	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean isDegree, String fileName) {
 		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
 	}
-
+	
+	/**
+	 * Get CLAMI result
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 * @param suppress detailed prediction results
+	 * @param isDegree: to get if clustering has to done with continuous values
+	 * @param fileName: name of the running file
+	 * @return instances labeled by CLAMI
+	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, boolean isDegree, String fileName) {
 		instancesByCLA = new Instances(instances);
@@ -51,17 +76,36 @@ public class CLAMI implements ICLAMI {
 		getPredictedLabels(suppress, instances);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}
-
+	
+	/**
+	 * To do clustering
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
 		instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel);
 		return null;
 	}
-
+	
+	/**
+	 * To do clustering
+	* @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
 	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
 		instancesByCLA = cla.clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
 		return null;
 	}
-
+	
+	/**
+	 * Get Training and Test Set after metric and instance selection 
+	 * @param keys: MVS
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
 	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 
 		for (Object key : keys) {
@@ -91,7 +135,12 @@ public class CLAMI implements ICLAMI {
 			System.err.println(
 					"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
 	}
-
+	
+	/**
+	 * Get Labeling
+	 * @param instances
+	 * @param suppress
+	 */
 	public void getPredictedLabels(boolean suppress, Instances instances) {
 		String mlAlgorithm = mlAlg != null && !mlAlg.equals("") ? mlAlg : "weka.classifiers.functions.Logistic";
 
@@ -114,7 +163,15 @@ public class CLAMI implements ICLAMI {
 			System.exit(0);
 		}
 	}
-
+	
+	/**
+	 * Get the result printed
+	 * @param instances
+	 * @param isExperimental: to check if experiment option is on
+	 * @param fileName: name of the running file
+	 * @param suppress detailed prediction results
+	 * @param positiveLabel positive label string value
+	 */
 	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
 			String positiveLabel) {
 		Utils.printEvaluationResult(instances, testInstances, trainingInstances, classifier, positiveLabel,
