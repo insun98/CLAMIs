@@ -8,7 +8,7 @@ import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
 public class CLA implements ICLA {
-	private Instances instancesByCLA = null;
+	protected Instances instancesByCLA = null;
 
 	/**
 	 * Get CLA result
@@ -37,10 +37,7 @@ public class CLA implements ICLA {
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, boolean isDegree, String fileName) {
 
-		if (isDegree)
-			instancesByCLA = clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
-		else
-			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
+		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}
 
@@ -76,44 +73,6 @@ public class CLA implements ICLA {
 		}
 
 		return instancesByCLA;
-	}
-
-	/**
-	 * Cluster with percentileCutoff. Set class value to positive if K is higher than cutoff of cluster. 
-	 * This is for continuous value which is 'plus' version. 
-	 * @param instances
-	 * @param percentileCutoff; cutoff percentile for cluster 
-	 * @param positiveLabel; string value of positive label 
-	 */
-	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
-
-		Instances instancesByCLA = new Instances(instances); 
-		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff); 
-		Double[] K = new Double[instances.numInstances()]; 
-
-		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
-			K[instIdx] = 0.0;
-			Double sum = 0.0;
-			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
-				if (attrIdx == instances.classIndex())
-					continue;
-				sum = sum + 1 / (1 + Math.pow(Math.E,
-						-(instances.get(instIdx).value(attrIdx) - cutoffsForHigherValuesOfAttribute[attrIdx])));
-
-			}
-			K[instIdx] = sum / instances.numAttributes();
-		}
-
-		double cutoffOfKForTopClusters = 0.5;
-
-		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
-			if (K[instIdx] >= cutoffOfKForTopClusters)
-				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
-			else
-				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
-		}
-		return instancesByCLA;
-
 	}
 
 	/**

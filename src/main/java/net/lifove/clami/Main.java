@@ -186,6 +186,18 @@ public class Main {
 			clamiApproach = new CLAMI(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
+		else if (version.equals("CLABI+")) {
+			clamiApproach = new CLABIPlus(mlAlg,isExperimental);
+			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+		}
+		else if (version.equals("CLAMI+")) {
+			clamiApproach = new CLAMIPlus(mlAlg,isExperimental);
+			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+		}
+		else if (version.equals("CLA+")) {
+			claApproach = new CLAPlus();
+			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+		}
 		else  {
 			claApproach = new CLA();
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);

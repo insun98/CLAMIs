@@ -11,17 +11,16 @@ import weka.core.Instances;
 
 public class CLABI implements ICLAMI {
 
-	private Instances trainingInstances;
-	private Instances testInstances;
-	private CLA cla = new CLA();
-	private static Instances instancesByCLA;
-	private String mlAlg;
+	protected Instances trainingInstances;
+	protected Instances testInstances;
+	protected static Instances instancesByCLA;
+	protected String mlAlg;
 	boolean isExperimental;
-	private HashMap<Integer, String> metricIdxWithTheSameViolationScores;
-	private static List<Double> probabilityOfCLAMIIdx;
-	private static List<Double> probabilityOfCLABIIdx;
-	private static List<Double> CLAMIIdx;
-	private static List<Double> CLABIIdx;
+	protected HashMap<Integer, String> metricIdxWithTheSameViolationScores;
+	protected static List<Double> probabilityOfCLAMIIdx;
+	protected static List<Double> probabilityOfCLABIIdx;
+	protected static List<Double> CLAMIIdx;
+	protected static List<Double> CLABIIdx;
 	List<Double> probabilityOfIdx = new ArrayList<Double>();
 	List<Double> predictedIdx = new ArrayList<Double>();
 	Classifier classifier;
@@ -71,10 +70,7 @@ public class CLABI implements ICLAMI {
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, boolean isDegree, String fileName) {
-		if (isDegree)
-			clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
-		else
-			clustering(instances, percentileCutoff, positiveLabel);
+		clustering(instances, percentileCutoff, positiveLabel);
 
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instancesByCLA, percentileCutoff);
 
@@ -116,6 +112,7 @@ public class CLABI implements ICLAMI {
 	 * @param positiveLabel positive label string value
 	 */
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
+		CLA cla = new CLA();
 		instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel);
 		return null;
 	}
@@ -126,18 +123,7 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 */
-	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel) {
-		instancesByCLA = cla.clusteringForContinuousValue(instances, percentileCutoff, positiveLabel);
-		return null;
-	}
 
-	/**
-	 * Get Training and Test Set after metric and instance selection 
-	 * @param keys: MVS
-	 * @param instances
-	 * @param percentileCutoff cutoff percentile for top and bottom clusters
-	 * @param positiveLabel positive label string value
-	 */
 	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 		trainingInstances = null;
 		testInstances = null;
@@ -213,7 +199,7 @@ public class CLABI implements ICLAMI {
 	 * @param instances
 	 * @param positiveLabel
 	 */
-	private static void getLabeling(Instances instances, String positiveLabel) {
+	public static void getLabeling(Instances instances, String positiveLabel) {
 
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 

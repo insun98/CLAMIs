@@ -11,8 +11,6 @@ public interface ICLA {
 
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel);
 
-	public Instances clusteringForContinuousValue(Instances instances, double percentileCutoff, String positiveLabel);
-
 	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
 			String positiveLabel);
 
