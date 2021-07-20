@@ -120,16 +120,11 @@ public class Utils {
 		Evaluation eval = null;
 		try {
 			eval = new Evaluation(trainingInstances);
+			eval.evaluateModel(classifier, testInstances);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		try {
-			eval.evaluateModel(classifier, testInstances);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		double TP = eval.truePositiveRate(instances.classAttribute().indexOfValue(positiveLabel));
 		double FP = eval.falsePositiveRate(instances.classAttribute().indexOfValue(positiveLabel));
 		double TN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
