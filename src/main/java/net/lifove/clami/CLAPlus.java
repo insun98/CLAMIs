@@ -42,6 +42,7 @@ public class CLAPlus extends CLA implements ICLA {
 	 * @param percentileCutoff; cutoff percentile for cluster 
 	 * @param positiveLabel; string value of positive label 
 	 */
+	@Override
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
 
 		Instances instancesByCLA = new Instances(instances); 
