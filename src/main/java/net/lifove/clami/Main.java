@@ -129,12 +129,23 @@ public class Main {
 
 			}
 		}
-		if (version.equals("CLABI"))
-			Utils.makeFile("CLABI");
-		else if (version.equals("CLAMI"))
+		if (version.equals("CLAMI"))
 			Utils.makeFile("CLAMI");
-		else
+		
+		else if (version.equals("CLABI")) 
+			Utils.makeFile("CLABI");
+		
+		else if (version.equals("CLAMI+"))
+			Utils.makeFile("CLAMI+");
+		
+		else if (version.equals("CLABI+"))
+			Utils.makeFile("CLABI+");
+		
+		else if(version.equals("CLA"))
 			Utils.makeFile("CLA");
+		
+		else 
+			Utils.makeFile("CLA+");
 	}
 
 	private boolean checkExperimentalOption(String expOpt) {
@@ -172,11 +183,6 @@ public class Main {
 
 		ICLA claApproach;
 		ICLAMI clamiApproach;
-		
-		if (version.equals("CLAMI")&&version.equals("CLABI")){
-			System.err.println("Select either \"-m(CLMAI)\" or \"-b(CLABI)\"");
-			return;
-		}
 		
 		if (version.equals("CLABI")) {
 			clamiApproach = new CLABI(mlAlg,isExperimental);
@@ -241,10 +247,12 @@ public class Main {
 				.hasArg().required().argName("postive label value").build());
 		
 		options.addOption(Option.builder("v").longOpt("version").desc(
-				"Options for selecting version of the program(Default is CLA). Insert  CLAMI to run CLAMI "+
+				"Options for selecting version of the program(Default is CLA). Insert  CLA for CLA"+ 
+				"CLAMI for CLAMI "+
 				"CLABI for CLABI. " +
-				"(Add P at the end to run plus version)")
+				"(Add + at the end to run plus version)")
 				.hasArg()
+				.required()
 				.argName("version of the program").build());
 
 		options.addOption(Option.builder("e").longOpt("experimental").desc(
