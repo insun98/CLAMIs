@@ -25,7 +25,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class Utils {
 	
 	private static ArrayList<ArrayList<Object>> Data = new ArrayList<ArrayList<Object>>();
-
 	private static int number = 0;
 
 	/**
@@ -102,7 +101,6 @@ public class Utils {
 		} else
 			System.out.print(precision + "," + recall + "," + f1);
 
-
 		ArrayList<Object> subData = new ArrayList<Object>();
 
 		subData.add(0, fileName);
@@ -144,7 +142,6 @@ public class Utils {
 		double FP = eval.falsePositiveRate(instances.classAttribute().indexOfValue(positiveLabel));
 		double TN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
 		double FN = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
-
 		double precision = eval.precision(instances.classAttribute().indexOfValue(positiveLabel));
 		double recall = eval.recall(instances.classAttribute().indexOfValue(positiveLabel));
 		double f1 = eval.fMeasure(instances.classAttribute().indexOfValue(positiveLabel));
@@ -157,12 +154,9 @@ public class Utils {
 			System.out.println("FP: " + FP);
 			System.out.println("TN: " + TN);
 			System.out.println("FN: " + FN);
-
-
 			System.out.println("precision: " + precision);
 			System.out.println("recall: " + recall);
 			System.out.println("f1: " + f1);
-
 			System.out.println("AUC: " + AUC);
 			System.out.println("MCC: " + MCC);
 

@@ -86,6 +86,7 @@ public class CLABIPlus extends CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 */
+	@Override
 	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
 		CLAPlus claPlus = new CLAPlus();
 		instancesByCLA = claPlus.clustering(instances, percentileCutoff, positiveLabel);
