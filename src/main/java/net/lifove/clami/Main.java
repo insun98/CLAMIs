@@ -287,7 +287,7 @@ public class Main {
 			if (cmd.getOptionValue("c") != null)
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
 			if(cmd.getOptionValue("v")!=null)
-				version = cmd.getOptionValue("v");
+				version = cmd.getOptionValue("v"); 
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
