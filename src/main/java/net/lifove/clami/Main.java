@@ -58,6 +58,10 @@ public class Main {
 				return;
 			}
 			
+			if(!version.equals("CLAMI") && !version.equals("CLAMI+") && !version.equals("CLABI") && !version.equals("CLABI+") && !version.equals("CLA") && !version.equals("CLA+")) {
+				System.err.println("Version format is incorrect. Check your version option.");
+				return;
+			}
 
 			// exit when percentile range is not correct (it should be 0 < range <= 100)
 			if (percentileCutoff <= 0 || 100 < percentileCutoff) {
@@ -141,11 +145,11 @@ public class Main {
 		else if (version.equals("CLABI+"))
 			Utils.makeFile("CLABI+");
 		
+		else if(version.equals("CLA+"))
+			Utils.makeFile("CLA+");
+		
 		else if(version.equals("CLA"))
 			Utils.makeFile("CLA");
-		
-		else 
-			Utils.makeFile("CLA+");
 	}
 
 	private boolean checkExperimentalOption(String expOpt) {
@@ -209,7 +213,7 @@ public class Main {
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
 		
-	}
+	} 
 
 	private void printHelp(Options options) {
 		// automatically generate the help statement
@@ -265,9 +269,6 @@ public class Main {
 				.desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)").hasArg()
 				.argName("Fully qualalified weka classifier name").build());
 
-		//options.addOption(Option.builder("d").longOpt("degree")
-				//.desc("To represent the violation of each attribute in continuous value").build());
-
 		return options;
 
 	} 
@@ -286,18 +287,17 @@ public class Main {
 			if (cmd.getOptionValue("c") != null)
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
 			if(cmd.getOptionValue("v")!=null)
-				version = cmd.getOptionValue("v");
+				version = cmd.getOptionValue("v"); 
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
-			//isDegree = cmd.hasOption("d");
 
 		} catch (Exception e) {
 			printHelp(options);
 			return false;
 		}
-
+ 
 		return true;
 	}
 }
