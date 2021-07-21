@@ -297,7 +297,7 @@ public class Main {
 			printHelp(options);
 			return false;
 		}
-
+ 
 		return true;
 	}
 }
