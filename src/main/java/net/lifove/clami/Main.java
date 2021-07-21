@@ -213,7 +213,7 @@ public class Main {
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
 		}
 		
-	}
+	} 
 
 	private void printHelp(Options options) {
 		// automatically generate the help statement
