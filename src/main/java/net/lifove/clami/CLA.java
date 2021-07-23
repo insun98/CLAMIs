@@ -19,9 +19,8 @@ public class CLA implements ICLA {
 	 * @param isDegree; boolean value whether plus version or not 
 	 * @param fileName; string value of file name  
 	 */
-	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean isDegree, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, fileName);
 	}
 
 	/**
@@ -35,7 +34,7 @@ public class CLA implements ICLA {
 	 * @param fileName; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean experimental, boolean isDegree, String fileName) {
+			boolean experimental, String fileName) {
 
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
