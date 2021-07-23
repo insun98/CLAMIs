@@ -243,7 +243,7 @@ public class CLABI implements ICLAMI {
 			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 				double LabelIdx = classifier.classifyInstance(instances.get(instIdx));
 				if (!suppress)
-					System.out.println("CLAMI: Instance " + (instIdx + 1) + " predicted as, "
+					System.out.println("CLABI: Instance " + (instIdx + 1) + " predicted as, "
 							+ instances.classAttribute().value((int) LabelIdx) +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") ");
 
