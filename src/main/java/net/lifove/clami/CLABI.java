@@ -49,13 +49,11 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param isDegree: to get if clustering has to done with continuous values
 	 * @param fileName: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
-	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean isDegree, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, fileName);
 	}
 	
 	/**
@@ -64,12 +62,11 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param isDegree: to get if clustering has to done with continuous values
 	 * @param fileName: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean experimental, boolean isDegree, String fileName) {
+			boolean experimental, String fileName) {
 		clustering(instances, percentileCutoff, positiveLabel);
 
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instancesByCLA, percentileCutoff);
@@ -89,7 +86,7 @@ public class CLABI implements ICLAMI {
 
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
 			CLAMI clami = new CLAMI(mlAlg, isExperimental);
-			clami.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			clami.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 			return;
 
 		}
@@ -123,7 +120,6 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 */
-
 	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 		trainingInstances = null;
 		testInstances = null;
@@ -244,7 +240,7 @@ public class CLABI implements ICLAMI {
 			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 				double LabelIdx = classifier.classifyInstance(instances.get(instIdx));
 				if (!suppress)
-					System.out.println("CLAMI: Instance " + (instIdx + 1) + " predicted as, "
+					System.out.println("CLABI: Instance " + (instIdx + 1) + " predicted as, "
 							+ instances.classAttribute().value((int) LabelIdx) +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") ");
 

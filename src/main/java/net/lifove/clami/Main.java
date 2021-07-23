@@ -39,7 +39,6 @@ public class Main {
 	boolean suppress = false;
 	String experimental;
 	String mlAlg = "";
-	boolean isDegree = false;
 	int sort = 0;
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -190,27 +189,27 @@ public class Main {
 		
 		if (version.equals("CLABI")) {
 			clamiApproach = new CLABI(mlAlg,isExperimental);
-			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else if (version.equals("CLAMI")) {
 			clamiApproach = new CLAMI(mlAlg,isExperimental);
-			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else if (version.equals("CLABI+")) {
 			clamiApproach = new CLABIPlus(mlAlg,isExperimental);
-			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else if (version.equals("CLAMI+")) {
 			clamiApproach = new CLAMIPlus(mlAlg,isExperimental);
-			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else if (version.equals("CLA+")) {
 			claApproach = new CLAPlus();
-			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else  {
 			claApproach = new CLA();
-			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, isDegree, fileName);
+			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		
 	} 
