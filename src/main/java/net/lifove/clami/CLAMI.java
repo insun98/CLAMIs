@@ -35,7 +35,6 @@ public class CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param isDegree: to get if clustering has to done with continuous values
 	 * @param fileName: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
@@ -49,7 +48,6 @@ public class CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param isDegree: to get if clustering has to done with continuous values
 	 * @param fileName: name of the running file
 	 * @return instances labeled by CLAMI
 	 */

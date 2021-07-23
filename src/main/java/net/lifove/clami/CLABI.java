@@ -49,7 +49,6 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param isDegree: to get if clustering has to done with continuous values
 	 * @param fileName: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
@@ -63,7 +62,6 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param isDegree: to get if clustering has to done with continuous values
 	 * @param fileName: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
@@ -122,7 +120,6 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 */
-
 	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 		trainingInstances = null;
 		testInstances = null;

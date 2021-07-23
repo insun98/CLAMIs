@@ -16,7 +16,6 @@ public class CLA implements ICLA {
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 
 	 * @param supress detailed prediction results
-	 * @param isDegree; boolean value whether plus version or not 
 	 * @param fileName; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
@@ -30,7 +29,6 @@ public class CLA implements ICLA {
 	 * @param positiveLabel; string value of positive label 
 	 * @param supress detailed prediction results
 	 * @param experimental; boolean value whether experimental or not 
-	 * @param isDegree; boolean value whether plus version or not 
 	 * @param fileName; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
