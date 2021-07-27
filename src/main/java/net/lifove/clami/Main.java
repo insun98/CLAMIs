@@ -250,10 +250,10 @@ public class Main {
 				.hasArg().required().argName("postive label value").build());
 		
 		options.addOption(Option.builder("v").longOpt("version").desc(
-				"Options for selecting version of the program(Default is CLA). Insert  CLA for CLA"+ 
-				"CLAMI for CLAMI "+
+				"Options for selecting a version of the program. Insert  CLA for CLA, "+ 
+				"CLAMI for CLAMI, "+
 				"CLABI for CLABI. " +
-				"(Add + at the end to run plus version)")
+				"(Add + at the end to run plus version. Ex) CLA+, CLAMI+, CLABI+)")
 				.hasArg()
 				.required()
 				.argName("version of the program").build());
@@ -266,7 +266,7 @@ public class Main {
 
 		options.addOption(Option.builder("a").longOpt("mlalgorithm")
 				.desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)").hasArg()
-				.argName("Fully qualalified weka classifier name").build());
+				.argName("Algorithm").build());
 
 		return options;
 
