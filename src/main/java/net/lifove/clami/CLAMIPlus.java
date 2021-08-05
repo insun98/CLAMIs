@@ -47,7 +47,7 @@ public class CLAMIPlus extends CLAMI implements ICLAMI {
 
 		Arrays.sort(keys);
 
-		getTrainingTestSet(keys, instances, positiveLabel, percentileCutoff);
+		getCLAMITrainingSet(keys, instances, positiveLabel, percentileCutoff);
 		getPredictedLabels(suppress, instances);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}

@@ -65,7 +65,7 @@ public class CLAMI implements ICLAMI {
 
 		Arrays.sort(keys);
 
-		getTrainingTestSet(keys, instances, positiveLabel, percentileCutoff);
+		getCLAMITrainingSet(keys, instances, positiveLabel, percentileCutoff);
 		getPredictedLabels(suppress, instances);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
 	}
@@ -89,7 +89,7 @@ public class CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 */
-	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
+	public void getCLAMITrainingSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 
 		for (Object key : keys) {
 
@@ -103,7 +103,7 @@ public class CLAMI implements ICLAMI {
 			double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(trainingInstances,
 					percentileCutoff); // get higher value cutoffs from the metric-selected dataset
 			String instIndicesNeedToRemove = Utils.getSelectedInstances(trainingInstances,
-					cutoffsForHigherValuesOfAttribute, positiveLabel);
+					cutoffsForHigherValuesOfAttribute, positiveLabel, -1);
 			trainingInstances = Utils.getInstancesByRemovingSpecificInstances(trainingInstances,
 					instIndicesNeedToRemove, false);
 
