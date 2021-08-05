@@ -78,7 +78,7 @@ public class CLABI implements ICLAMI {
 		Object[] descending_keys = metricIdxWithTheSameViolationScores.keySet().toArray();
 
 		Arrays.sort(descending_keys, Collections.reverseOrder());
-		getTrainingTestSet(descending_keys, instances, positiveLabel, percentileCutoff);
+		getCLABITrainingSet(descending_keys, instances, positiveLabel, percentileCutoff);
 		getProbabiltyOfIdx();
 		probabilityOfCLABIIdx.addAll(probabilityOfIdx);
 
@@ -92,7 +92,7 @@ public class CLABI implements ICLAMI {
 		}
 
 		Arrays.sort(keys);
-		getTrainingTestSet(keys, instances, positiveLabel, percentileCutoff);
+		getCLAMITrainingSet(keys, instances, positiveLabel, percentileCutoff);
 		getProbabiltyOfIdx();
 		probabilityOfCLAMIIdx.addAll(probabilityOfIdx);
 		CLAMIIdx.addAll(predictedIdx);
@@ -120,13 +120,14 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 */
-	public void getTrainingTestSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
+	public void getCLAMITrainingSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
 		trainingInstances = null;
 		testInstances = null;
-
+		String selectedMetricIndices = null;
+		String instIndicesNeedToRemove = null;
 		for (Object key : keys) {
 
-			String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key)
+			selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key)
 					+ (instancesByCLA.classIndex() + 1);
 			trainingInstances = Utils.getInstancesByRemovingSpecificAttributes(instancesByCLA, selectedMetricIndices,
 					true);
@@ -135,7 +136,50 @@ public class CLABI implements ICLAMI {
 			// Instance selection
 			double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(trainingInstances,
 					percentileCutoff); // get higher value cutoffs from the metric-selected dataset
-			String instIndicesNeedToRemove = Utils.getSelectedInstances(trainingInstances,
+			instIndicesNeedToRemove = Utils.getSelectedInstances(trainingInstances,
+					cutoffsForHigherValuesOfAttribute, positiveLabel, -1);
+			trainingInstances = Utils.getInstancesByRemovingSpecificInstances(trainingInstances,
+					instIndicesNeedToRemove, false);
+
+			if (trainingInstances.numInstances() != 0) 
+				break;
+			
+		}
+
+		if (trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[0] != 0
+				&& trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[1] != 0) {
+			System.out.println("Removed Instances CLAMI: "+ instIndicesNeedToRemove);
+			System.out.println("Selected Metrics CLAMI: "+ selectedMetricIndices);
+			return;
+		} 
+		else
+			System.err.println(
+					"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+	}
+	/**
+	 * To do clustering
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 */
+	public void getCLABITrainingSet(Object[] keys, Instances instances, String positiveLabel, double percentileCutoff) {
+		trainingInstances = null;
+		testInstances = null;
+		String selectedMetricIndices = null;
+		String instIndicesNeedToRemove = null;
+
+		for (Object key : keys) {
+
+			selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key)
+					+ (instancesByCLA.classIndex() + 1);
+			trainingInstances = Utils.getInstancesByRemovingSpecificAttributes(instancesByCLA, selectedMetricIndices,
+					true);
+			testInstances = Utils.getInstancesByRemovingSpecificAttributes(instances, selectedMetricIndices, true);
+
+			// Instance selection
+			double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(trainingInstances,
+					percentileCutoff); // get higher value cutoffs from the metric-selected dataset
+			instIndicesNeedToRemove = Utils.getInversedSelectedInstances(trainingInstances,
 					cutoffsForHigherValuesOfAttribute, positiveLabel);
 			trainingInstances = Utils.getInstancesByRemovingSpecificInstances(trainingInstances,
 					instIndicesNeedToRemove, false);
@@ -145,11 +189,13 @@ public class CLABI implements ICLAMI {
 		}
 
 		if (trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[0] != 0
-				&& trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[1] != 0)
+				&& trainingInstances.attributeStats(trainingInstances.classIndex()).nominalCounts[1] != 0) {
+			System.out.println("Removed Instances CLABI: "+ instIndicesNeedToRemove);
+			System.out.println("Selected Metrics CLABI: "+ selectedMetricIndices);
 			return;
-		else
+		}else
 			System.err.println(
-					"Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
+					"Dataset is not proper to build a CLABI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
 	}
 	
 	/**
@@ -243,7 +289,6 @@ public class CLABI implements ICLAMI {
 					System.out.println("CLABI: Instance " + (instIdx + 1) + " predicted as, "
 							+ instances.classAttribute().value((int) LabelIdx) +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") ");
-
 			}
 
 		} catch (Exception e) {
