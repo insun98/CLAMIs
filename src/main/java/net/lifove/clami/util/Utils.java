@@ -265,6 +265,59 @@ public class Utils {
 	 * @return String
 	 */
 	public static String getSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
+			String positiveLabel, int inversedMetricIndex) {
+
+		int[] violations = new int[instances.numInstances()];
+		int inversedSectionBegin = inversedMetricIndex;
+		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
+
+			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
+				if (attrIdx == instances.classIndex())
+					continue; // no need to compute violation score for the class attribute
+				if(attrIdx == inversedMetricIndex && attrIdx != instances.classIndex()) {
+					if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] && instances
+							.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)) {
+						violations[instIdx]++;
+					} else if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
+							&& instances.get(instIdx).classValue() == instances.classAttribute()
+							.indexOfValue(getNegLabel(instances, positiveLabel))) {
+						violations[instIdx]++;
+					}
+					inversedMetricIndex++;
+					
+				}else {
+					if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] && instances
+						.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)) {
+					violations[instIdx]++;
+				} else if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute()
+						.indexOfValue(getNegLabel(instances, positiveLabel))) {
+					violations[instIdx]++;
+				}
+			}
+				
+			}
+			inversedMetricIndex = inversedSectionBegin;
+		}
+
+		String selectedInstances = "";
+
+		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
+			if (violations[instIdx] > 0)
+				selectedInstances += (instIdx + 1) + ","; // let the start attribute index be 1
+		}
+
+		return selectedInstances;
+	}
+	/**
+	 * Get the selected instance for the instance selection
+	 * 
+	 * @param instances
+	 * @param cutoffsForHigherValuesOfAttribute
+	 * @param positiveLabel
+	 * @return String
+	 */
+	public static String getInversedSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
 			String positiveLabel) {
 
 		int[] violations = new int[instances.numInstances()];
@@ -275,10 +328,10 @@ public class Utils {
 				if (attrIdx == instances.classIndex())
 					continue; // no need to compute violation score for the class attribute
 
-				if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx] && instances
+				if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx] && instances
 						.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)) {
 					violations[instIdx]++;
-				} else if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
+				} else if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
 						&& instances.get(instIdx).classValue() == instances.classAttribute()
 						.indexOfValue(getNegLabel(instances, positiveLabel))) {
 					violations[instIdx]++;
