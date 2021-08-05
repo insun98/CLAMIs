@@ -188,7 +188,7 @@ public class Main {
 		ICLAMI clamiApproach;
 		
 		if (version.equals("CLABI")) {
-			clamiApproach = new CLABI(mlAlg,isExperimental);
+			clamiApproach = new CLABI2(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else if (version.equals("CLAMI")) {
