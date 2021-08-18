@@ -49,7 +49,7 @@ public class CLA implements ICLA {
 		instancesByCLA = new Instances(instances);
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff);
 		Double[] K = new Double[instances.numInstances()];
-
+		System.out.println(cutoffsForHigherValuesOfAttribute[5]);
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			K[instIdx] = 0.0;
 
