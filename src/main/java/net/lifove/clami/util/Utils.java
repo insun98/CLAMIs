@@ -61,15 +61,15 @@ public class Utils {
 					cell.setCellValue((Double) arrData.get(k));
 			}
 		}
-		try {
+//		try {
 			String strFilePath = versionName + "_Result.xlsx";
 			FileOutputStream fOut = new FileOutputStream(strFilePath);
 			workbook.write(fOut);
 			workbook.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
+//		} catch (IOException e) {
+		//	e.printStackTrace();
+			//System.exit(0);
+	//	}
 
 	}
 
