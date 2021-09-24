@@ -4,17 +4,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.stream.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
+
 
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
-public class CLA2 extends CLA implements ICLA{
+public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 	double sum = 0.0;
 	double totalViolation =0.0;
 	double score =0.0;
+	double[] instancesClassvalue;
+	double[] instancesValue;
+	Double[] K;
+	HashMap<Double, Integer> percentileCorrelation;
 	/**
 	 * Get CLA result
 	 * @param instances
@@ -39,14 +47,16 @@ public class CLA2 extends CLA implements ICLA{
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, String fileName) {
 		
-		sum = 0.0;
+	///	sum = 0.0;
 	//	percentileCutoff = selectPercentileCutoff(instances, positiveLabel);
-		for(percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5) {
-			System.out.println("Percentile" + percentileCutoff);
-			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
+	//	for(percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5) {
+	//		System.out.println("Percentile" + percentileCutoff);
+			
+			//instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
+		 	percentileCutoff = getTopPercentileCutoff(instances, positiveLabel);
 			printResult(instances, experimental, fileName, suppress, positiveLabel);
 		}
-	}
+	//}
 	
 	/**
 	 * Select the appropriate cutoff value
@@ -95,8 +105,9 @@ public class CLA2 extends CLA implements ICLA{
 		
 
 		instancesByCLA = new Instances(instances);
+	
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff);
-		Double[] K = new Double[instances.numInstances()];
+		K = new Double[instances.numInstances()];
 		
 		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
@@ -109,12 +120,11 @@ public class CLA2 extends CLA implements ICLA{
 				if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]) 
 					K[instIdx]++;
 					
-				
 			}
 		}
 		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
-		double[] Y = new double[instances.numInstances()];
-//		double []Y = {9, 7, 99, 6, 3, 0, 8, 0};
+		instancesClassvalue = new double[instances.numInstances()];
+		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			
 			if (K[instIdx] > cutoffOfKForTopClusters)
@@ -122,30 +132,134 @@ public class CLA2 extends CLA implements ICLA{
 			else
 				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
 			
-			Y[instIdx]=Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
+			instancesClassvalue[instIdx]=Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
+			//System.out.println("instancesClassvalue" + instancesClassvalue[instIdx]);
 		}
 		
-		for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
-			double[] X = instancesByCLA.attributeToDoubleArray(attrIdx);
-		
-			for(int i =0; i<X.length; i++) {
-				if(Double.isNaN(X[i])) {
-					X[i]=0;
-				}
-			}
-			SpearmansCorrelation correlation1 = new SpearmansCorrelation();
-			
-			double correlation = correlation1.correlation(X,Y);
-			if(Double.isNaN(correlation))
-				correlation = 0;
-			
-			System.out.println("Metric No.: " + attrIdx + "correlation: " + correlation);
-			sum = sum + correlation;
-
-		}
 		return instancesByCLA;
 	}
 
 	
+	public double getTopPercentileCutoff(Instances instances, String positiveLabel){
+		
+		percentileCorrelation = new HashMap<>();
+		int numOfCorrelation = 0;
+		
+		for(double percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5){
+			
+			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
+			System.out.println("Percentile" + percentileCutoff);
+			
+			
+			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
+				
+				instancesValue = instancesByCLA.attributeToDoubleArray(attrIdx);
+				//System.out.println("instancesValue" + instancesValue[attrIdx]);
+				
+				for(int i =0; i<instancesValue.length; i++) {
+					if(Double.isNaN(instancesValue[i])) {
+						instancesValue[i]=0;
+					}
+				}
+				
+				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
+					
+				double correlation = correlation1.correlation(instancesValue, instancesClassvalue);
+				if(Double.isNaN(correlation))
+					correlation = 0;
+						
+				System.out.println("metric num: " + (attrIdx+1) + " "+ correlation);
+					
+				if(correlation > 0.5)
+					numOfCorrelation++;
+			}
+			
+			percentileCorrelation.put(percentileCutoff, numOfCorrelation);
+			numOfCorrelation = 0;
+		}
+		
+		List<Map.Entry<Double, Integer>> entryList = new LinkedList<>(percentileCorrelation.entrySet());
+		entryList.sort(Map.Entry.comparingByValue());
+		for(Map.Entry<Double, Integer> entry : entryList){
+		    System.out.println("key : " + entry.getKey() + ", value : " + entry.getValue());	    
+		}
+		int max = entryList.get(entryList.size()-1).getValue();
+		Vector<Double> percentileList = new Vector<Double>();
+		
+		for (double key : percentileCorrelation.keySet()) {
+			
+            if (max == percentileCorrelation.get(key)) {
+            	
+            	percentileList.add(key);     
+            }
+        }
+		Object[] percentileListArray = percentileList.toArray();
+		Arrays.sort(percentileListArray);
+		System.out.println((double) percentileListArray[percentileListArray.length - 1]);
+		
+		return (double) percentileListArray[percentileListArray.length - 1];
+		
+	}
+	
+public double getBottomPercentileCutoff(Instances instances, String positiveLabel){
+		
+		percentileCorrelation = new HashMap<>();
+		int numOfCorrelation = 0;
+		
+		for(double percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5){
+			
+			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
+			System.out.println("Percentile" + percentileCutoff);
+			
+			
+			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
+				
+				instancesValue = instancesByCLA.attributeToDoubleArray(attrIdx);
+				//System.out.println("instancesValue" + instancesValue[attrIdx]);
+				
+				for(int i =0; i<instancesValue.length; i++) {
+					if(Double.isNaN(instancesValue[i])) {
+						instancesValue[i]=0;
+					}
+				}
+				
+				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
+					
+				double correlation = correlation1.correlation(instancesValue, instancesClassvalue);
+				if(Double.isNaN(correlation))
+					correlation = 0;
+						
+				//System.out.println("metric num: " + (attrIdx+1) + " "+ correlation);
+					
+				if(correlation > 0.5)
+					numOfCorrelation++;
+			}
+			
+			percentileCorrelation.put(percentileCutoff, numOfCorrelation);
+			numOfCorrelation = 0;
+		}
+		
+		List<Map.Entry<Double, Integer>> entryList = new LinkedList<>(percentileCorrelation.entrySet());
+		entryList.sort(Map.Entry.comparingByValue());
+		for(Map.Entry<Double, Integer> entry : entryList){
+		    System.out.println("key : " + entry.getKey() + ", value : " + entry.getValue());	    
+		}
+		int max = entryList.get(entryList.size()-1).getValue();
+		Vector<Double> percentileList = new Vector<Double>();
+		
+		for (double key : percentileCorrelation.keySet()) {
+			
+            if (max == percentileCorrelation.get(key)) {
+            	
+            	percentileList.add(key);     
+            }
+        }
+		Object[] percentileListArray = percentileList.toArray();
+		Arrays.sort(percentileListArray);
+		//System.out.println((double) percentileListArray[percentileListArray.length - 1]);
+		
+		return (double) percentileListArray[0];
+		
+	}
 
 }
