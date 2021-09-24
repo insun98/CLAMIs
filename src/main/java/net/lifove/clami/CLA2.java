@@ -158,7 +158,7 @@ public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 				
 				for(int i =0; i<instancesValue.length; i++) {
 					if(Double.isNaN(instancesValue[i])) {
-						instancesValue[i]=0;
+						instancesValue[i]=0; 
 					}
 				}
 				
