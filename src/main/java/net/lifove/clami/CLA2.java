@@ -160,7 +160,7 @@ public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 					if(Double.isNaN(instancesValue[i])) {
 						instancesValue[i]=0;
 					}
-				}
+				} 
 				
 				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
 					
