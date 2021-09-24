@@ -143,7 +143,7 @@ public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 	public double getTopPercentileCutoff(Instances instances, String positiveLabel){
 		
 		percentileCorrelation = new HashMap<>();
-		int numOfCorrelation = 0;
+		int numOfCorrelation = 0; 
 		
 		for(double percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5){
 			
