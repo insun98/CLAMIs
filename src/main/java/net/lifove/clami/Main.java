@@ -39,6 +39,7 @@ public class Main {
 	boolean suppress = false;
 	String experimental;
 	String mlAlg = "";
+	String percentileOption;
 	int sort = 0;
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -48,33 +49,34 @@ public class Main {
 	}
 
 	void runner(String[] args) throws FileNotFoundException, IOException {
+		
+			Options options = createOptions();
+	
+			if (parseOptions(options, args)) {
+				if (help) {
+					printHelp(options);
+					return;
+				}
+				
+				if(!version.equals("CLAMI") && !version.equals("CLAMI+") && !version.equals("CLABI") && !version.equals("CLABI+") && !version.equals("CLA") && !version.equals("CLA+")) {
+					System.err.println("Version format is incorrect. Check your version option.");
+					return;
+				}
+	
+				// exit when percentile range is not correct (it should be 0 < range <= 100)
+				if (percentileCutoff <= 0 || 100 < percentileCutoff) {
+					System.err.println("Cutoff percentile must be 0 < and <=100");
+					return;
+				}
+	
+				// exit experimental option format is not correct
+				if (experimental != null && !checkExperimentalOption(experimental)) {
+					System.err.println(
+							"Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
+									+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
+					return;
+				}
 
-		Options options = createOptions();
-
-		if (parseOptions(options, args)) {
-			if (help) {
-				printHelp(options);
-				return;
-			}
-			
-			if(!version.equals("CLAMI") && !version.equals("CLAMI+") && !version.equals("CLABI") && !version.equals("CLABI+") && !version.equals("CLA") && !version.equals("CLA+")) {
-				System.err.println("Version format is incorrect. Check your version option.");
-				return;
-			}
-
-			// exit when percentile range is not correct (it should be 0 < range <= 100)
-			if (percentileCutoff <= 0 || 100 < percentileCutoff) {
-				System.err.println("Cutoff percentile must be 0 < and <=100");
-				return;
-			}
-
-			// exit experimental option format is not correct
-			if (experimental != null && !checkExperimentalOption(experimental)) {
-				System.err.println(
-						"Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
-								+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
-				return;
-			}
 
 			File dir = new File(dataFilePath);
 
@@ -87,6 +89,8 @@ public class Main {
 
 					// load an arff file
 					Instances instances = Utils.loadArff(file.toString(), labelName);
+					CLA2 cla2 = new CLA2();
+					percentileCutoff = cla2.getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 					if (instances != null) {
 						double unit = (double) 100 / (instances.numInstances());
@@ -106,10 +110,14 @@ public class Main {
 							experiment(instances, posLabelValue, file.toString());
 						}
 					}
+					
 				}
 			} else {
 				// load an arff file
 				Instances instances = Utils.loadArff(dataFilePath, labelName);
+				
+				CLA2 cla2 = new CLA2();
+				percentileCutoff = cla2.getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 				if (instances != null) {
 					double unit = (double) 100 / (instances.numInstances());
@@ -208,7 +216,7 @@ public class Main {
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else  {
-			claApproach = new CLA();
+			claApproach = new CLA2();
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		
@@ -234,8 +242,11 @@ public class Main {
 		options.addOption(Option.builder("h").longOpt("help").desc("Help").build());
 
 		options.addOption(Option.builder("c").longOpt("cutoff")
-				.desc("Cutoff percentile for higher values. Default is median (50).").hasArg()
-				.argName("cutoff percentile").build());
+				.desc("Options for selecting percentilecutoff of the same values, "+
+				"t for top percentile cutoff, "+
+				"b for bottom percentile cutoff, "+
+				"m for median (50).").hasArg()
+				.argName("cutoff percentile").required().build());
 
 		options.addOption(Option.builder("s").longOpt("suppress")
 				.desc("Suppress detailed prediction results. Only works when the arff data is labeled.").build());
@@ -284,7 +295,7 @@ public class Main {
 			labelName = cmd.getOptionValue("l");
 			posLabelValue = cmd.getOptionValue("p");
 			if (cmd.getOptionValue("c") != null)
-				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
+				percentileOption = cmd.getOptionValue("c");
 			if(cmd.getOptionValue("v")!=null)
 				version = cmd.getOptionValue("v"); 
 			help = cmd.hasOption("h");
