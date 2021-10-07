@@ -18,7 +18,7 @@ import net.lifove.clami.percentileselectors.PercentileSelectorTop;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
-public class CLA2 extends CLA implements ICLA, IPercentileSelector{
+public class CLA2 extends CLA implements ICLA{
 	double sum = 0.0;
 	double totalViolation =0.0;
 	double score =0.0;
@@ -26,6 +26,7 @@ public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 	double[] instancesValue;
 	Double[] K;
 	HashMap<Double, Integer> percentileCorrelation;
+	int j=1;
 	/**
 	 * Get CLA result
 	 * @param instances
@@ -55,9 +56,16 @@ public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 	//	for(percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5) {
 	//		System.out.println("Percentile" + percentileCutoff);
 			
+
+			
+		for(j=1; j<100; j++)
+		{
+			
 			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 			printResult(instances, experimental, fileName, suppress, positiveLabel);
-		}
+			
+		}	
+	}
 	//}
 	
 	/**
@@ -97,103 +105,5 @@ public class CLA2 extends CLA implements ICLA, IPercentileSelector{
 		return percentileCutoff;
 	}
 
-	/**
-	 * Cluster with percentileCutoff. Set class value to positive if K is higher than cutoff of cluster.
-	 * @param instances
-	 * @param percentileCutoff; cutoff percentile for cluster 
-	 * @param positiveLabel; string value of positive label 
-	 */
-	public Instances clustering(Instances instances, double percentileCutoff, String positiveLabel) {
-		
-
-		instancesByCLA = new Instances(instances);
-	
-		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff);
-		K = new Double[instances.numInstances()];
-		
-		
-		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
-			K[instIdx] = 0.0;
-
-			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
-				if (attrIdx == instances.classIndex())
-					continue;
-				//System.out.println("median" + cutoffsForHigherValuesOfAttribute[attrIdx]);
-				if (instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]) 
-					K[instIdx]++;
-					
-			}
-		}
-		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
-		instancesClassvalue = new double[instances.numInstances()];
-		
-		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
-			
-			if (K[instIdx] > cutoffOfKForTopClusters)
-				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
-			else
-				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
-			
-			instancesClassvalue[instIdx]=Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
-			//System.out.println("instancesClassvalue" + instancesClassvalue[instIdx]);
-		}
-		
-		return instancesByCLA;
-	}
-
-	
-	public double getOptimalPercentile(Instances instances, String positiveLabel, String percentileOption){
-		
-		double percentileCutoff;
-		percentileCorrelation = new HashMap<>();
-		int numOfCorrelation = 0;
-		
-		for(percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5){
-			
-			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
-			//System.out.println("Percentile" + percentileCutoff);
-			
-			
-			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
-				
-				instancesValue = instancesByCLA.attributeToDoubleArray(attrIdx);
-				//System.out.println("instancesValue" + instancesValue[attrIdx]);
-				 
-				for(int i =0; i<instancesValue.length; i++) {
-					if(Double.isNaN(instancesValue[i])) {
-						instancesValue[i]=0;
-					}
-				}
-				
-				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
-					
-				double correlation = correlation1.correlation(instancesValue, instancesClassvalue);
-				if(Double.isNaN(correlation))
-					correlation = 0;
-						
-				//System.out.println("metric num: " + (attrIdx+1) + " "+ correlation);
-					
-				if(correlation > 0.5)
-					numOfCorrelation++;
-			}
-			
-			percentileCorrelation.put(percentileCutoff, numOfCorrelation);
-			numOfCorrelation = 0;
-		}
-		
-		if(percentileOption.equals("t"))
-			percentileCutoff = PercentileSelectorTop.getTopPercentileCutoff(instances,positiveLabel, percentileCorrelation);
-		
-		else if(percentileOption.equals("b"))
-			percentileCutoff = PercentileSelectorBottom.getBottomPercentileCutoff(instances,positiveLabel,percentileCorrelation);
-		
-		else if(percentileOption.equals("m"))
-			percentileCutoff = 50;
-		
-		
-		
-		return percentileCutoff;
-		
-	}
 
 }

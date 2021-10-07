@@ -3,6 +3,10 @@ package net.lifove.clami;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +17,11 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 
+import net.lifove.clami.percentileselectors.IPercentileSelector;
+import net.lifove.clami.percentileselectors.PercentileSelectorBottom;
+import net.lifove.clami.percentileselectors.PercentileSelectorTop;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
@@ -26,7 +34,7 @@ import weka.core.Instances;
  * @author JC
  *
  */
-public class Main {
+public class Main implements IPercentileSelector{
 
 	String dataFilePath;
 	String labelName;
@@ -41,6 +49,7 @@ public class Main {
 	String mlAlg = "";
 	String percentileOption;
 	int sort = 0;
+
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 
@@ -89,8 +98,7 @@ public class Main {
 
 					// load an arff file
 					Instances instances = Utils.loadArff(file.toString(), labelName);
-					CLA2 cla2 = new CLA2();
-					percentileCutoff = cla2.getOptimalPercentile(instances, posLabelValue, percentileOption);
+					percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 					if (instances != null) {
 						double unit = (double) 100 / (instances.numInstances());
@@ -116,8 +124,7 @@ public class Main {
 				// load an arff file
 				Instances instances = Utils.loadArff(dataFilePath, labelName);
 				
-				CLA2 cla2 = new CLA2();
-				percentileCutoff = cla2.getOptimalPercentile(instances, posLabelValue, percentileOption);
+				percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 				if (instances != null) {
 					double unit = (double) 100 / (instances.numInstances());
@@ -309,5 +316,66 @@ public class Main {
 		}
  
 		return true;
+	}
+	
+public double getOptimalPercentile(Instances instances, String positiveLabel, String percentileOption){
+		
+		double percentileCutoff;
+		double[] instancesValue;
+		double[] instancesClassvalue = new double[instances.numInstances()];
+		Instances instancesByCLA;
+		HashMap<Double, Integer> percentileCorrelation = new HashMap<>();
+		CLA2 cla2 = new CLA2();
+		int numOfCorrelation = 0;
+		
+		for(percentileCutoff = 1.0; percentileCutoff<100; percentileCutoff+=1){
+			
+			instancesByCLA = cla2.clustering(instances, percentileCutoff, positiveLabel);
+			//System.out.println("Percentile" + percentileCutoff);
+			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) 
+			{
+				 instancesClassvalue[instIdx]=Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
+			}
+			
+			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
+				
+				instancesValue = instancesByCLA.attributeToDoubleArray(attrIdx);
+				//System.out.println("instancesValue" + instancesValue[attrIdx]);
+				 
+				for(int i =0; i<instancesValue.length; i++) {
+					if(Double.isNaN(instancesValue[i])) {
+						instancesValue[i]=0;
+					}
+				}
+				
+				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
+					
+				double correlation = correlation1.correlation(instancesValue, instancesClassvalue);
+				if(Double.isNaN(correlation))
+					correlation = 0;
+						
+				//System.out.println("metric num: " + (attrIdx+1) + " "+ correlation);
+					
+				if(correlation > 0.5)
+					numOfCorrelation++;
+			}
+			
+			percentileCorrelation.put(percentileCutoff, numOfCorrelation);
+			numOfCorrelation = 0;
+		}
+		
+		if(percentileOption.equals("t"))
+			percentileCutoff = PercentileSelectorTop.getTopPercentileCutoff(instances,positiveLabel, percentileCorrelation);
+		
+		else if(percentileOption.equals("b"))
+			percentileCutoff = PercentileSelectorBottom.getBottomPercentileCutoff(instances,positiveLabel,percentileCorrelation);
+		
+		else if(percentileOption.equals("m"))
+			percentileCutoff = 50;
+		
+		
+		
+		return percentileCutoff;
+		
 	}
 }
