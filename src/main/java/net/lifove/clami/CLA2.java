@@ -53,18 +53,16 @@ public class CLA2 extends CLA implements ICLA{
 		
 	///	sum = 0.0;
 	//	percentileCutoff = selectPercentileCutoff(instances, positiveLabel);
-	//	for(percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5) {
-	//		System.out.println("Percentile" + percentileCutoff);
+//		for(percentileCutoff = 10.0; percentileCutoff<100; percentileCutoff+=5) {
+//			System.out.println("Percentile" + percentileCutoff);
 			
-
-			
-		for(j=1; j<100; j++)
-		{
+//		for(j=1; j<100; j++)
+//		{
 			
 			instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 			printResult(instances, experimental, fileName, suppress, positiveLabel);
 			
-		}	
+//		}	
 	}
 	//}
 	
