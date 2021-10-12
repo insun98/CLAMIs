@@ -64,7 +64,7 @@ public class CLA implements ICLA {
 			}
 		}
 		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
-		double []Y = new double[instances.numInstances()] ; // for Correlation calculation variable 
+		// double []Y = new double[instances.numInstances()] ; // for Correlation calculation variable 
 		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			if (K[instIdx] > cutoffOfKForTopClusters)
@@ -72,19 +72,17 @@ public class CLA implements ICLA {
 			else
 				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
 		
-			Y[instIdx] = Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx)) ;
+			// Y[instIdx] = Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx)) ;
 		
 		}
+		
 		/*
-		// Additional code for calculate Correlation for each cutoff 
-		double sum = 0.0 ;
-		int countOver = 0 ;
-		Integer[] metricIdxCorrOver = new Integer[instances.numAttributes()] ;
-		int index = 0 ;
-		
-		System.out.println("cutoff: " + percentileCutoff) ;
-		
+		// Additional code for calculate Correlation
 		for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
+			
+			double avg = 0.0 ;
+			double sum = 0.0 ;
+			
 			double[] X = instancesByCLA.attributeToDoubleArray(attrIdx) ;
 			
 			for (int i = 0; i < X.length; i++) {
@@ -92,51 +90,37 @@ public class CLA implements ICLA {
 					X[i] = 0;
 				}
 			}
-			SpearmansCorrelation correlation1 = new SpearmansCorrelation();
-			
-			double correlation = correlation1.correlation(X, Y) ;
-//			System.out.println("corr: " + attrIdx + " " + correlation) ;
-			
-			if (Double.isNaN(correlation))
-				correlation = 0;
-			
-			sum = sum + correlation ;
-			
-			if (correlation >= 0.5) {
-				countOver += 1;
-				metricIdxCorrOver[index++] = (attrIdx + 1) ;
-			}
-		}
-		
-		System.out.println("#OfOver0.5: " + index) ;
-		
-		for (int i =0; i < index ; i++) {
-			System.out.print((i+1) + " " + metricIdxCorrOver[i] + " ") ;
-			
-			double[] X2 = instancesByCLA.attributeToDoubleArray(metricIdxCorrOver[i]-1);
-			double partialAvg = 0;
-			
-			for (int j = 0; j < index; j++) {
-				if (i == j) 
+
+			for (int attrIdx2 = 0; attrIdx2 < instances.numAttributes(); attrIdx2++) {
+				if (attrIdx == attrIdx2)
 					continue ;
 				
-				double[] Y2 = instancesByCLA.attributeToDoubleArray(metricIdxCorrOver[j]-1);
+				double[] Y = instancesByCLA.attributeToDoubleArray(attrIdx2) ;
 				
-				SpearmansCorrelation correlation2 = new SpearmansCorrelation() ;
-				
-				double correlation = correlation2.correlation(X2, Y2);
-				
+				for (int j = 0; j < Y.length; j++) {
+					if (Double.isNaN(Y[j])) {
+						Y[j] = 0;
+					}
+				}
 
-				partialAvg += correlation ;
+				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
+				
+				double correlation = correlation1.correlation(X, Y) ; 
+
+				if (Double.isNaN(correlation))
+					correlation = 0 ;
+				sum = sum + correlation ;
+				
+				avg = sum;
 			}
-			partialAvg = partialAvg/(index-1) ;
 			
-			System.out.println(partialAvg) ;
+			avg = avg / (instances.numAttributes() - 1) ;
+			
+			System.out.println(attrIdx + " " + avg) ;
 			
 		}
-		System.out.println();
 		*/
-
+		
 		return instancesByCLA;
 	}
 
