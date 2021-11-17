@@ -1,4 +1,6 @@
-package net.lifove.clami;
+package net.lifove.clami.percentileselectors;
+
+
 
 import weka.core.Instances;
 

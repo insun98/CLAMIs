@@ -378,4 +378,16 @@ public double getOptimalPercentile(Instances instances, String positiveLabel, St
 		return percentileCutoff;
 		
 	}
+
+@Override
+public double getTopPercentileCutoff(Instances instances, String positiveLabel) {
+	// TODO Auto-generated method stub
+	return 0;
+}
+
+@Override
+public double getBottomPercentileCutoff(Instances instances, String positiveLabel) {
+	// TODO Auto-generated method stub
+	return 0;
+}
 }
