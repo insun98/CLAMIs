@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
-
+import net.lifove.clami.util.GenerateFinalWithPrediction;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
@@ -38,6 +37,7 @@ public class CLA implements ICLA {
 
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, fileName, suppress, positiveLabel);
+
 	}
 
 	/**
@@ -51,8 +51,7 @@ public class CLA implements ICLA {
 		instancesByCLA = new Instances(instances);
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instances, percentileCutoff);
 		Double[] K = new Double[instances.numInstances()];
-//		System.out.println(cutoffsForHigherValuesOfAttribute[5]);
-		
+
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			K[instIdx] = 0.0;
 
@@ -64,62 +63,13 @@ public class CLA implements ICLA {
 			}
 		}
 		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
-		// double []Y = new double[instances.numInstances()] ; // for Correlation calculation variable 
 		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 			if (K[instIdx] > cutoffOfKForTopClusters)
 				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 			else
 				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
-		
-			// Y[instIdx] = Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx)) ;
-		
 		}
-		
-		/*
-		// Additional code for calculate Correlation
-		for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
-			
-			double avg = 0.0 ;
-			double sum = 0.0 ;
-			
-			double[] X = instancesByCLA.attributeToDoubleArray(attrIdx) ;
-			
-			for (int i = 0; i < X.length; i++) {
-				if (Double.isNaN(X[i])) {
-					X[i] = 0;
-				}
-			}
-
-			for (int attrIdx2 = 0; attrIdx2 < instances.numAttributes(); attrIdx2++) {
-				if (attrIdx == attrIdx2)
-					continue ;
-				
-				double[] Y = instancesByCLA.attributeToDoubleArray(attrIdx2) ;
-				
-				for (int j = 0; j < Y.length; j++) {
-					if (Double.isNaN(Y[j])) {
-						Y[j] = 0;
-					}
-				}
-
-				SpearmansCorrelation correlation1 = new SpearmansCorrelation();
-				
-				double correlation = correlation1.correlation(X, Y) ; 
-
-				if (Double.isNaN(correlation))
-					correlation = 0 ;
-				sum = sum + correlation ;
-				
-				avg = sum;
-			}
-			
-			avg = avg / (instances.numAttributes() - 1) ;
-			
-			System.out.println(attrIdx + " " + avg) ;
-			
-		}
-		*/
 		
 		return instancesByCLA;
 	}
