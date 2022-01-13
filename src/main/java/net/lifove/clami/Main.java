@@ -203,7 +203,7 @@ public class Main implements IPercentileSelector{
 		ICLAMI clamiApproach;
 		
 		if (version.equals("CLABI")) {
-			clamiApproach = new CLABI2(mlAlg,isExperimental);
+			clamiApproach = new CLABI(mlAlg,isExperimental);
 			clamiApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else if (version.equals("CLAMI")) {
@@ -223,7 +223,7 @@ public class Main implements IPercentileSelector{
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		else  {
-			claApproach = new CLA2();
+			claApproach = new CLA();
 			claApproach.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
 		}
 		
@@ -285,7 +285,7 @@ public class Main implements IPercentileSelector{
 		options.addOption(Option.builder("a").longOpt("mlalgorithm")
 				.desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)").hasArg()
 				.argName("Algorithm").build());
-
+		
 		return options;
 
 	} 
@@ -318,19 +318,19 @@ public class Main implements IPercentileSelector{
 		return true;
 	}
 	
-public double getOptimalPercentile(Instances instances, String positiveLabel, String percentileOption){
+	public double getOptimalPercentile(Instances instances, String positiveLabel, String percentileOption){
 		
 		double percentileCutoff;
 		double[] instancesValue;
 		double[] instancesClassvalue = new double[instances.numInstances()];
 		Instances instancesByCLA;
 		HashMap<Double, Integer> percentileCorrelation = new HashMap<>();
-		CLA2 cla2 = new CLA2();
+		CLA cla = new CLA();
 		int numOfCorrelation = 0;
 		
 		for(percentileCutoff = 1.0; percentileCutoff<100; percentileCutoff+=1){
 			
-			instancesByCLA = cla2.clustering(instances, percentileCutoff, positiveLabel);
+			instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel);
 			//System.out.println("Percentile" + percentileCutoff);
 			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) 
 			{
