@@ -334,7 +334,11 @@ public class Main implements IPercentileSelector{
 			//System.out.println("Percentile" + percentileCutoff);
 			for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) 
 			{
-				 instancesClassvalue[instIdx]=Double.parseDouble(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
+				if (Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx).equals(positiveLabel)) {
+					instancesClassvalue[instIdx] = 1.0;
+				} else {
+					instancesClassvalue[instIdx] = 0.0;
+				}
 			}
 			
 			for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
