@@ -1,16 +1,19 @@
 package net.lifove.clami;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
+import net.lifove.clami.util.DataFeatures;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Remove;
 
 public class Tools {
-	CLA cla = new CLA();
-
+	
+	static CLA cla = new CLA();
+	
 	public double selectPercentileCutoff(Instances instances, String positiveLabel, Instances instancesByCLA,
 			double score, double totalViolation, double sum) {
 		double finalPercentileCutoff = 0.0;
@@ -45,16 +48,23 @@ public class Tools {
 	}
 
 	public void ksTest(Instances instancesByCLA, Instances instances, double percentileCutoff, String positiveLabel) {
-
+		
 		double criticalValue;
 		double alpha = 1.224;
 		int[] scoreOfInstances = new int[instances.numInstances()];
 		int[] scoreOfInstancesCopy = new int[instances.numInstances()];
-		int maxVote = 0;
-		int count = 0;
-
+		int numOfGoups = 0;
+		int valueOfMaxVote = 0;
+		int numOfMaxVote = 0;
+		int[] numberOfSelectedAttributes = new int[instances.numAttributes()];
+		
 		criticalValue = alpha * Math.sqrt((instances.numInstances() * 2) / Math.pow(instances.numInstances(), 2));
 
+		
+		for (int i = 0; i <instances.numAttributes(); i++) {
+			numberOfSelectedAttributes[i] = 0;
+		}
+		
 		for (int attrIdx = 0; attrIdx < instances.numAttributes() - 1; attrIdx++) {
 
 			int k = 0;
@@ -64,6 +74,7 @@ public class Tools {
 
 			for (int attrIdx1 = 0; attrIdx1 < instances.numAttributes() - 1; attrIdx1++) {
 
+				
 				double[] Y = instances.attributeToDoubleArray(attrIdx1);
 				KolmogorovSmirnovTest ks = new KolmogorovSmirnovTest();
 				double i = ks.kolmogorovSmirnovTest(X, Y);
@@ -71,16 +82,16 @@ public class Tools {
 				if (i < criticalValue) {
 					newInstances.deleteAttributeAt(k);
 				}
-
 				if (i > criticalValue) {
 					k++;
+					numberOfSelectedAttributes[attrIdx1]++;
+
 				}
-
+				
 			}
-
 			if (newInstances.numAttributes() > 2) {
 				instancesByCLA = cla.clustering(newInstances, percentileCutoff, positiveLabel);
-				maxVote++;
+				numOfGoups++;
 
 				for (int instIdx = 0; instIdx < newInstances.numInstances(); instIdx++) {
 
@@ -91,20 +102,29 @@ public class Tools {
 				}
 			}
 		}
-
+	
 		scoreOfInstancesCopy = scoreOfInstances.clone();
 
 		Arrays.sort(scoreOfInstances);
 		int idx = (int) (instances.numInstances() * 0.25);
 		int cutoffValue = scoreOfInstances[idx];
 
+		valueOfMaxVote = scoreOfInstances[instances.numInstances()-1] ;
+		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
 
+			if (valueOfMaxVote == scoreOfInstances[instIdx]) {
+				numOfMaxVote++;
+			}
+			
 			if (scoreOfInstancesCopy[instIdx] >= cutoffValue)
 				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 			else
 				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
 		}
+		
+		 DataFeatures data = new DataFeatures(instances.numInstances(), instances.numAttributes(), numOfGoups, valueOfMaxVote, numOfMaxVote);
+		 // data.printAllFeatures();
 	}
 
 	public void calculateSpearmanCorrelation(Instances instances, Instances instancesByCLA) {
