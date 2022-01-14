@@ -35,11 +35,11 @@ public class CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
-	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, fileName);
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String filePath) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, filePath);
 	}
 	
 	/**
@@ -48,11 +48,11 @@ public class CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean experimental, String fileName) {
+			boolean experimental, String filePath) {
 		instancesByCLA = new Instances(instances);
 		
 		clustering(instances, percentileCutoff, positiveLabel);
@@ -67,7 +67,7 @@ public class CLAMI implements ICLAMI {
 
 		getCLAMITrainingSet(keys, instances, positiveLabel, percentileCutoff);
 		getPredictedLabels(suppress, instances);
-		printResult(instances, experimental, fileName, suppress, positiveLabel);
+		printResult(instances, experimental, filePath, suppress, positiveLabel);
 	}
 	
 	/**
@@ -151,14 +151,14 @@ public class CLAMI implements ICLAMI {
 	 * Get the result printed
 	 * @param instances
 	 * @param isExperimental: to check if experiment option is on
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @param suppress detailed prediction results
 	 * @param positiveLabel positive label string value
 	 */
-	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
+	public void printResult(Instances instances, boolean experimental, String filePath, boolean suppress,
 			String positiveLabel) {
 		Utils.printEvaluationResult(instances, testInstances, trainingInstances, classifier, positiveLabel,
-				experimental, fileName);
+				experimental, filePath);
 
 	}
 

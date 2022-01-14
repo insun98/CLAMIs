@@ -7,23 +7,29 @@ import weka.core.converters.ConverterUtils.DataSink;
 
 public class GenerateFinalWithPrediction {
 	
+	private String fileName ;
+	
+	public GenerateFinalWithPrediction(String filePath) {
+		fileName = extractOnlyFileName(filePath);
+	}
+	
 	/**
 	 * This method is for generate arff file for result. 
 	 * The label of this result file is predicted wih clami or other version that come though the parameter.
+	 * To use this method, call like follow: 
+	 * 		GenerateFinalWithPrediction newFile = new GenerateFinalWithPrediction(filePath);
+			newFile.generateResult("CLA", instances, percentileCutoff, positiveLabel);
 	 * @param version String value of version (ex. "CLA" or "CLAMI" ...)
 	 * @param instances 
 	 * @param percentileCutoff
 	 * @param positiveLabel
-	 * @param filePath
 	 */
-	public void generateResult(String version, Instances instances, double percentileCutoff, String positiveLabel, String filePath) {
+	public void generateResult(String version, Instances instances, double percentileCutoff, String positiveLabel) {
 		
-		String fileName ;
-		
-		// version of cla 
+		// version of CLA 
 		if (version.equals("CLA")) {
 			
-			fileName = "CLA-label-" + extractOnlyFileName(filePath);
+			fileName = "CLA-predicted-" + fileName;
 			
 			CLA cla = new CLA();
 			Instances instancesByCLA = cla.clustering(instances, percentileCutoff, positiveLabel); 
@@ -35,8 +41,9 @@ public class GenerateFinalWithPrediction {
 				   e.printStackTrace();
 			}
 		}
-		// version of clami 
-		
+		/**
+		 * To do:  version of CLAMI 
+		 */
 	}
 	
 	/**

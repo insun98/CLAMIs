@@ -49,11 +49,11 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
-	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, fileName);
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String filePath) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, filePath);
 	}
 	
 	/**
@@ -62,11 +62,11 @@ public class CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean experimental, String fileName) {
+			boolean experimental, String filePath) {
 		clustering(instances, percentileCutoff, positiveLabel);
 
 		double[] cutoffsForHigherValuesOfAttribute = Utils.getHigherValueCutoffs(instancesByCLA, percentileCutoff);
@@ -86,7 +86,7 @@ public class CLABI implements ICLAMI {
 
 		if (CLABIIdx == null || probabilityOfCLABIIdx == null) {
 			CLAMI clami = new CLAMI(mlAlg, isExperimental);
-			clami.getResult(instances, percentileCutoff, positiveLabel, suppress, fileName);
+			clami.getResult(instances, percentileCutoff, positiveLabel, suppress, filePath);
 			return;
 
 		}
@@ -99,7 +99,7 @@ public class CLABI implements ICLAMI {
 
 		getLabeling(instances, positiveLabel);
 		getPredictedLabels(suppress, instances);
-		printResult(instances, experimental, fileName, suppress, positiveLabel);
+		printResult(instances, experimental, filePath, suppress, positiveLabel);
 	}
 	
 	/**
@@ -303,14 +303,14 @@ public class CLABI implements ICLAMI {
 	 * Get the result printed
 	 * @param instances
 	 * @param isExperimental: to check if experiment option is on
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @param suppress detailed prediction results
 	 * @param positiveLabel positive label string value
 	 */
-	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
+	public void printResult(Instances instances, boolean experimental, String filePath, boolean suppress,
 			String positiveLabel) {
 		Utils.printEvaluationResult(instances, instances, instancesByCLA, classifier, positiveLabel, experimental,
-				fileName);
+				filePath);
 
 	}
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import net.lifove.clami.util.GenerateFinalWithPrediction;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
@@ -17,10 +16,10 @@ public class CLA implements ICLA {
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 
 	 * @param supress detailed prediction results
-	 * @param fileName; string value of file name  
+	 * @param filePath; string value of file name  
 	 */
-	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, fileName);
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String filePath) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, filePath);
 	}
 
 	/**
@@ -30,14 +29,13 @@ public class CLA implements ICLA {
 	 * @param positiveLabel; string value of positive label 
 	 * @param supress detailed prediction results
 	 * @param experimental; boolean value whether experimental or not 
-	 * @param fileName; string value of file name  
+	 * @param filePath; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean experimental, String fileName) {
+			boolean experimental, String filePath) {
 
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
-		printResult(instances, experimental, fileName, suppress, positiveLabel);
-
+		printResult(instances, experimental, filePath, suppress, positiveLabel);
 	}
 
 	/**
@@ -79,11 +77,11 @@ public class CLA implements ICLA {
 	 * in terms of TP, TN, FP, FN, precision, recall, and f1.
 	 * @param instances
 	 * @param experimental; boolean value whether experimental or not 
-	 * @param fileName; string value of file name  
+	 * @param filePath; string value of file name  
 	 * @param supress detailed prediction results
 	 * @param positiveLabel; string value of positive label 
 	 */
-	public void printResult(Instances instances, boolean experimental, String fileName, boolean suppress,
+	public void printResult(Instances instances, boolean experimental, String filePath, boolean suppress,
 			String positiveLabel) {
 
 		int TP = 0, FP = 0, TN = 0, FN = 0;
@@ -112,7 +110,7 @@ public class CLA implements ICLA {
 
 		if (TP + TN + FP + FN > 0)
 			try {
-				Utils.printEvaluationResultCLA(TP, TN, FP, FN, experimental, fileName);
+				Utils.printEvaluationResultCLA(TP, TN, FP, FN, experimental, filePath);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
