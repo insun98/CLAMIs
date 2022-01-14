@@ -20,11 +20,11 @@ public class CLABIPlus extends CLABI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
-	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, fileName);
+	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String filePath) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, filePath);
 	}
 	
 	/**

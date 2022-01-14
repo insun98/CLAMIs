@@ -16,7 +16,7 @@ public class CLA implements ICLA {
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 
 	 * @param supress detailed prediction results
-	 * @param fileName; string value of file name  
+	 * @param filePath; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String filePath) {
 		getResult(instances, percentileCutoff, positiveLabel, suppress, false, filePath);
@@ -29,7 +29,7 @@ public class CLA implements ICLA {
 	 * @param positiveLabel; string value of positive label 
 	 * @param supress detailed prediction results
 	 * @param experimental; boolean value whether experimental or not 
-	 * @param fileName; string value of file name  
+	 * @param filePath; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, String filePath) {
@@ -77,7 +77,7 @@ public class CLA implements ICLA {
 	 * in terms of TP, TN, FP, FN, precision, recall, and f1.
 	 * @param instances
 	 * @param experimental; boolean value whether experimental or not 
-	 * @param fileName; string value of file name  
+	 * @param filePath; string value of file name  
 	 * @param supress detailed prediction results
 	 * @param positiveLabel; string value of positive label 
 	 */

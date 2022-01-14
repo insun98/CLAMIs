@@ -16,12 +16,12 @@ public class CLAMIPlus extends CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean isDegree, String fileName) {
-		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, fileName);
+			boolean isDegree, String filePath) {
+		getResult(instances, percentileCutoff, positiveLabel, suppress, false, isDegree, filePath);
 	}
 	
 	/**
@@ -30,11 +30,11 @@ public class CLAMIPlus extends CLAMI implements ICLAMI {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @param positiveLabel positive label string value
 	 * @param suppress detailed prediction results
-	 * @param fileName: name of the running file
+	 * @param filePath: name of the running file
 	 * @return instances labeled by CLAMI
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
-			boolean experimental, boolean isDegree, String fileName) {
+			boolean experimental, boolean isDegree, String filePath) {
 		instancesByCLA = new Instances(instances);
 		
 		clustering(instances, percentileCutoff, positiveLabel);
@@ -49,7 +49,7 @@ public class CLAMIPlus extends CLAMI implements ICLAMI {
 
 		getCLAMITrainingSet(keys, instances, positiveLabel, percentileCutoff);
 		getPredictedLabels(suppress, instances);
-		printResult(instances, experimental, fileName, suppress, positiveLabel);
+		printResult(instances, experimental, filePath, suppress, positiveLabel);
 	}
 	
 	/**
