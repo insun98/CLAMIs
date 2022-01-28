@@ -6,7 +6,6 @@ import java.util.HashMap;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
-import net.lifove.clami.util.DataFeatures;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
@@ -123,8 +122,6 @@ public class Tools {
 				instancesByCLA.instance(instIdx).setClassValue(Utils.getNegLabel(instancesByCLA, positiveLabel));
 		}
 		
-		 DataFeatures data = new DataFeatures(instances.numInstances(), instances.numAttributes(), numOfGoups, valueOfMaxVote, numOfMaxVote);
-		 // data.printAllFeatures();
 	}
 
 	public void calculateSpearmanCorrelation(Instances instances, Instances instancesByCLA) {

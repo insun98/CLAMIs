@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import net.lifove.clami.factor.DataFeatures;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
@@ -36,6 +37,9 @@ public class CLA implements ICLA {
 
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, filePath, suppress, positiveLabel);
+		
+		DataFeatures feature = new DataFeatures(instancesByCLA, instances, percentileCutoff, positiveLabel);
+		
 	}
 
 	/**
@@ -71,7 +75,7 @@ public class CLA implements ICLA {
 		
 		return instancesByCLA;
 	}
-
+	
 	/**
 	 * Calculate the final result and print the prediction result performance 
 	 * in terms of TP, TN, FP, FN, precision, recall, and f1.
