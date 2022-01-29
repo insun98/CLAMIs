@@ -3,10 +3,7 @@ package net.lifove.clami;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,9 +92,10 @@ public class Main implements IPercentileSelector{
 				File[] fileList = dir.listFiles();
 
 				for (File file : fileList) {
-
 					// load an arff file
 					Instances instances = Utils.loadArff(file.toString(), labelName);
+					if (instances == null) continue ;
+					
 					percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 					if (instances != null) {
