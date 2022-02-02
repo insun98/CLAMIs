@@ -39,12 +39,13 @@ public class CLA implements ICLA {
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, String filePath) {
-		System.out.println(filePath);
-		//instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
-		//printResult(instances, experimental, filePath, suppress, positiveLabel);
-		instances = removeNoiseMetrics(instances);
+		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
+		printResult(instances, experimental, filePath, suppress, positiveLabel);
+		//instances = removeNoiseMetrics(instances);
 		DataFactorGIR feature = new DataFactorGIR(instancesByCLA, instances, percentileCutoff, positiveLabel);
 	}
+	
+	//remove the metrics whose standard deviation is 0
 	public Instances removeNoiseMetrics(Instances instances) {
 		Instances newInstances;
 		int numOfRemovedMetrics =0;
