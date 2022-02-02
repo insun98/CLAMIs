@@ -96,7 +96,7 @@ public class Main implements IPercentileSelector{
 					Instances instances = Utils.loadArff(file.toString(), labelName);
 					if (instances == null) continue ;
 					
-					percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
+					//percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 					if (instances != null) {
 						double unit = (double) 100 / (instances.numInstances());
