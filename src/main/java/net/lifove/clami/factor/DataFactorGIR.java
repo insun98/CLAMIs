@@ -1,5 +1,9 @@
 package net.lifove.clami.factor;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import net.lifove.clami.CLA;
@@ -19,7 +23,7 @@ public class DataFactorGIR extends DataFactor {
 	 * @param instancesByCLA
 	 * @param instances
 	 * @param percentileCutoff
-	 * @param positiveLabel
+	 * @param positiveLabe
 	 */
 	@Override
 	public void computeValue(Instances instancesByCLA, Instances instances, double percentileCutoff, String positiveLabel) {
@@ -32,11 +36,12 @@ public class DataFactorGIR extends DataFactor {
 		
 		double alpha = 1.224;
 		double criticalValue = alpha * Math.sqrt((instances.numInstances() * 2) / Math.pow(instances.numInstances(), 2));
-		
+	//	System.out.println(criticalValue);
+		int countOfSkip =0 ;
 		for (int attrIdx = 0; attrIdx < instances.numAttributes() - 1; attrIdx++) {
-
+			String metricsInTheGroup="";
 			int k = 0;
-
+			int flag = 0;
 			double[] X = instances.attributeToDoubleArray(attrIdx);
 			Instances newInstances = new Instances(instances);
 
@@ -50,10 +55,22 @@ public class DataFactorGIR extends DataFactor {
 					newInstances.deleteAttributeAt(k);
 				}
 				if (i > criticalValue) {
+					//check std of metric which is related to the main metric
+					StandardDeviation std = new StandardDeviation();
+					double stdOfMetric = std.evaluate(instances.attributeToDoubleArray(attrIdx1));
+					if(stdOfMetric == 0.0) 
+						flag = 1;
+					metricsInTheGroup = metricsInTheGroup + Integer.toString(attrIdx1+1) + ",";
 					k++;
 				}
 				
 			}
+			//skip the group if any metric in the group has std of 0
+			if(flag == 1) {
+				countOfSkip ++;
+				continue;
+			}
+			//System.out.println(metricsInTheGroup);
 			if (newInstances.numAttributes() > 2) {
 				instancesByCLA = cla.clustering(newInstances, percentileCutoff, positiveLabel);
 				numOfGroups++;
@@ -68,7 +85,10 @@ public class DataFactorGIR extends DataFactor {
 			}
 			
 		}
-		
+		System.out.print("," + countOfSkip);
+		System.out.print("," + numOfGroups);
+		Arrays.sort(scoreOfInstances);
+		System.out.println("," + scoreOfInstances[scoreOfInstances.length-1]);
 		value = (double) numOfGroups/numOfInstances;
 		
 	}
