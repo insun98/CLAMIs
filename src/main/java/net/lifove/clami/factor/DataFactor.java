@@ -1,14 +1,26 @@
 package net.lifove.clami.factor;
 
-import weka.core.Instances;
+public class DataFactor {
 
-abstract class DataFactor {
-
-	static String factorName ;
-	static double value;
+	String factorName ;
+	double value;
 	
-	abstract void computeValue(Instances instancesByCLA, Instances instances, double percentileCutoff, String positiveLabel); 
+	public DataFactor() {
+		this.factorName = "";
+		this.value = 0;
+	}
 	
-	abstract double getValue();
+	public DataFactor(String factorName, double value) {
+		this.factorName = factorName;
+		this.value = value;
+	}
+	
+	public DataFactor computeValue() {
+		return null;
+	} 
+	
+	public double getValue() {
+		return value;
+	}
 	
 }
