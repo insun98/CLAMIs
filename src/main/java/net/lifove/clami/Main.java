@@ -16,6 +16,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 
+import net.lifove.clami.factor.DataFactorGIR;
+import net.lifove.clami.factor.DataFeasibilityChecker;
 import net.lifove.clami.percentileselectors.IPercentileSelector;
 import net.lifove.clami.percentileselectors.PercentileSelectorBottom;
 import net.lifove.clami.percentileselectors.PercentileSelectorTop;
@@ -56,95 +58,20 @@ public class Main implements IPercentileSelector{
 
 	void runner(String[] args) throws FileNotFoundException, IOException {
 		
-			Options options = createOptions();
+		Options options = createOptions();
 	
-			if (parseOptions(options, args)) {
-				if (help) {
-					printHelp(options);
-					return;
-				}
-				
-				if(!version.equals("CLAMI") && !version.equals("CLAMI+") && !version.equals("CLABI") && !version.equals("CLABI+") && !version.equals("CLA") && !version.equals("CLA+")) {
-					System.err.println("Version format is incorrect. Check your version option.");
-					return;
-				}
-	
-				// exit when percentile range is not correct (it should be 0 < range <= 100)
-				if (percentileCutoff <= 0 || 100 < percentileCutoff) {
-					System.err.println("Cutoff percentile must be 0 < and <=100");
-					return;
-				}
-	
-				// exit experimental option format is not correct
-				if (experimental != null && !checkExperimentalOption(experimental)) {
-					System.err.println(
-							"Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
-									+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
-					return;
-				}
-
+		if (parseOptions(options, args)) {
+			handleAuxOptions(options);
 
 			File dir = new File(dataFilePath);
 
-			// If input path is directory, all file list is execute
 			if (dir.isDirectory()) {
-
-				File[] fileList = dir.listFiles();
-
-				for (File file : fileList) {
-					// load an arff file
-					Instances instances = Utils.loadArff(file.toString(), labelName);
-					if (instances == null) continue ;
-					
-					//percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
-
-					if (instances != null) {
-						double unit = (double) 100 / (instances.numInstances());
-						// double unitFloor = Math.floor(unit);
-						double unitCeil = Math.ceil(unit);
-
-						// TODO need to check how median is computed
-						if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
-							System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
-							return;
-						}
-
-						if (experimental == null || experimental.equals("")) {
-							// do prediction
-							prediction(instances, posLabelValue, false, file.toString());
-						} else {
-							experiment(instances, posLabelValue, file.toString());
-						}
-					}
-					
-				}
+				processMultipleFileInOneDirectory(dir);
 			} else {
-				// load an arff file
-				Instances instances = Utils.loadArff(dataFilePath, labelName);
-				
-				percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
-
-				if (instances != null) {
-					double unit = (double) 100 / (instances.numInstances());
-					// double unitFloor = Math.floor(unit);
-					double unitCeil = Math.ceil(unit);
-
-					// TODO need to check how median is computed
-					if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
-						System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
-						return;
-					}
-
-					if (experimental == null || experimental.equals("")) {
-						// do prediction
-						prediction(instances, posLabelValue, false, dataFilePath);
-					} else {
-						experiment(instances, posLabelValue, dataFilePath);
-					}
-				}
-
+				processSingleFile();
 			}
 		}
+			
 		if (version.equals("CLAMI"))
 			Utils.makeFile("CLAMI");
 		
@@ -162,6 +89,98 @@ public class Main implements IPercentileSelector{
 		
 		else if(version.equals("CLA"))
 			Utils.makeFile("CLA");
+	}
+
+	private void processSingleFile() throws FileNotFoundException, IOException {
+		// load an arff file
+		Instances instances = Utils.loadArff(dataFilePath, labelName);
+		
+		percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
+
+		if (instances != null) {
+			double unit = (double) 100 / (instances.numInstances());
+			// double unitFloor = Math.floor(unit);
+			double unitCeil = Math.ceil(unit);
+
+			// TODO need to check how median is computed
+			if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
+				System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
+				return;
+			}
+
+			// For computing data factors 
+			DataFeasibilityChecker data = new DataFeasibilityChecker();
+			data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
+
+			if (experimental == null || experimental.equals("")) {
+				// do prediction
+				prediction(instances, posLabelValue, false, dataFilePath);
+			} else {
+				experiment(instances, posLabelValue, dataFilePath);
+			}
+		}
+	}
+
+	private void processMultipleFileInOneDirectory(File dir) throws FileNotFoundException, IOException {
+		File[] fileList = dir.listFiles();
+
+		for (File file : fileList) {
+			// load an arff file
+			Instances instances = Utils.loadArff(file.toString(), labelName);
+			if (instances == null) continue ;
+			
+			//percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
+
+			if (instances != null) {
+				double unit = (double) 100 / (instances.numInstances());
+				// double unitFloor = Math.floor(unit);
+				double unitCeil = Math.ceil(unit);
+
+				// TODO need to check how median is computed
+				if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
+					System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
+					return;
+				}
+				
+				// For computing data factors 
+				DataFeasibilityChecker data = new DataFeasibilityChecker();
+				data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
+
+				if (experimental == null || experimental.equals("")) {
+					// do prediction
+					prediction(instances, posLabelValue, false, file.toString());
+				} else {
+					experiment(instances, posLabelValue, file.toString());
+				}
+			}
+			
+		}
+	}
+
+	private void handleAuxOptions(Options options) {
+		if (help) {
+			printHelp(options);
+			return;
+		}
+		
+		if(!version.equals("CLAMI") && !version.equals("CLAMI+") && !version.equals("CLABI") && !version.equals("CLABI+") && !version.equals("CLA") && !version.equals("CLA+")) {
+			System.err.println("Version format is incorrect. Check your version option.");
+			return;
+		}
+
+		// exit when percentile range is not correct (it should be 0 < range <= 100)
+		if (percentileCutoff <= 0 || 100 < percentileCutoff) {
+			System.err.println("Cutoff percentile must be 0 < and <=100");
+			return;
+		}
+
+		// exit experimental option format is not correct
+		if (experimental != null && !checkExperimentalOption(experimental)) {
+			System.err.println(
+					"Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
+							+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
+			return;
+		}
 	}
 
 	private boolean checkExperimentalOption(String expOpt) {

@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.apache.commons.math3.stat.StatUtils;
-
-import net.lifove.clami.factor.DataFactorGIR;
-import net.lifove.clami.factor.DataFeatures;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -42,7 +38,7 @@ public class CLA implements ICLA {
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, filePath, suppress, positiveLabel);
 		//instances = removeNoiseMetrics(instances);
-		DataFactorGIR feature = new DataFactorGIR(instancesByCLA, instances, percentileCutoff, positiveLabel);
+		
 	}
 	
 	//remove the metrics whose standard deviation is 0
