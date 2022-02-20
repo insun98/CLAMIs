@@ -89,7 +89,7 @@ public class Utils {
 		double recall = (double)TP / (TP + FN);
 		double f1 = (2 * (precision * recall)) / (precision + recall);
 		if (!experimental) {
-			System.out.println(fileName);
+		
 			System.out.println("TP: " + TP);
 			System.out.println("FP: " + FP);
 			System.out.println("TN: " + TN);
