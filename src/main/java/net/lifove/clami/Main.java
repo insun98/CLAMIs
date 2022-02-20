@@ -109,6 +109,7 @@ public class Main implements IPercentileSelector{
 			}
 
 			// For computing data factors 
+			
 			DataFeasibilityChecker data = new DataFeasibilityChecker();
 			data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
 

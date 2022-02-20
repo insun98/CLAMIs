@@ -34,6 +34,7 @@ public class DataFeasibilityChecker {
 
 			// String metricsInTheGroup="";
 			int k = 0;
+			int flag=0;
 			double[] X = instances.attributeToDoubleArray(attrIdx);
 			Instances newInstances = new Instances(instances);
 
@@ -51,11 +52,14 @@ public class DataFeasibilityChecker {
 					StandardDeviation std = new StandardDeviation();
 					double stdOfMetric = std.evaluate(instances.attributeToDoubleArray(attrIdx1));
 					if(stdOfMetric == 0.0) 
+						flag=1;
 					// metricsInTheGroup = metricsInTheGroup + Integer.toString(attrIdx1+1) + ",";
 					k++;
 				}
 				
 			}
+			if(flag == 1)
+				continue;
 
 			if (newInstances.numAttributes() > 2) {
 				instancesByCLA = cla.clustering(newInstances, percentileCutoff, positiveLabel);
