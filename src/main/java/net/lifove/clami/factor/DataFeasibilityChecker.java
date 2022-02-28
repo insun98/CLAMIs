@@ -78,6 +78,7 @@ public class DataFeasibilityChecker {
 		}
 		
 		Arrays.sort(scoreOfInstances);
+		
 		valueOfMaxVote = scoreOfInstances[instances.numInstances()-1] ;
 		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
@@ -92,7 +93,7 @@ public class DataFeasibilityChecker {
 		numberOfMetrics = new DataFactor("numberOfMetrics", instances.numAttributes());
 		numberOfGroups = new DataFactor("numberOfGroups", numOfGroup);
 		numberOfMaxVote = new DataFactor("numberOfMaxVotes", numOfMaxVote);
-		MaxValueOfVotes = new DataFactor("MaxValueOfVotes", valueOfMaxVote);
+		MaxValueOfVotes = new DataFactor("valueOfMaxVote", valueOfMaxVote);
 		
 		addBasicFactors();
 		addAdvancedFactor();
