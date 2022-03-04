@@ -110,7 +110,10 @@ public class DataFeasibilityChecker {
 	
 	public void addAdvancedFactor() {
 		DataFactorGIR gir = new DataFactorGIR(factors);
+		DataFactorGMR gmr = new DataFactorGMR(factors);
 		addDataFactor(gir.computeValue());
+		addDataFactor(gmr.computeValue());
+		
 	}
 	
 	public void addDataFactor(DataFactor factor) {
@@ -121,6 +124,16 @@ public class DataFeasibilityChecker {
 		for (int i = 0; i < factors.size(); i++) {
 			System.out.println(factors.get(i).factorName + ": " + factors.get(i).getValue());
 		}
+	}
+	
+	public DataFactor getFactors(String name)
+	{
+		for(int i = 0; i < factors.size(); i++)
+		{
+			if(factors.get(i).factorName.equals(name))
+				return factors.get(i);
+		}		
+		return null;
 	}
 
 

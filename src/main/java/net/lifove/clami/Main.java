@@ -16,6 +16,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 
+import net.lifove.clami.factor.DataFactor;
 import net.lifove.clami.factor.DataFactorGIR;
 import net.lifove.clami.factor.DataFeasibilityChecker;
 import net.lifove.clami.percentileselectors.IPercentileSelector;
@@ -39,6 +40,7 @@ public class Main implements IPercentileSelector{
 	String labelName;
 	String posLabelValue;
 	double percentileCutoff = 50;
+	double factorCutoff = 0.2;
 	String version="";
 	//boolean isClami="";
 	//boolean isClabi="";
@@ -47,6 +49,7 @@ public class Main implements IPercentileSelector{
 	String experimental;
 	String mlAlg = "";
 	String percentileOption;
+	String factorCutoffOption;
 	int sort = 0;
 
 	
@@ -112,13 +115,24 @@ public class Main implements IPercentileSelector{
 			
 			DataFeasibilityChecker data = new DataFeasibilityChecker();
 			data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
-
-			if (experimental == null || experimental.equals("")) {
-				// do prediction
-				prediction(instances, posLabelValue, false, dataFilePath);
-			} else {
-				experiment(instances, posLabelValue, dataFilePath);
+			DataFactor GIR = data.getFactors("GIR");
+			DataFactor GMR = data.getFactors("GMR");
+			
+			double finalFactor = 3 * GIR.getValue() + GMR.getValue();
+			
+			if(finalFactor >= factorCutoff)
+			{
+				System.out.println(finalFactor + " 해당 파일은 CLA/CLAMI에 적합한 데이터 입니다.");
+				if (experimental == null || experimental.equals("")) {
+						// do prediction
+						prediction(instances, posLabelValue, false, dataFilePath);
+					} else {
+						experiment(instances, posLabelValue, dataFilePath);
+					}
 			}
+
+			else
+				System.out.println(finalFactor +" 해당 파일은 CLA/CLAMI에 적합하지 않은 데이터 입니다.");
 		}
 	}
 
@@ -304,6 +318,10 @@ public class Main implements IPercentileSelector{
 				.desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)").hasArg()
 				.argName("Algorithm").build());
 		
+		options.addOption(Option.builder("fc").longOpt("factorCutoff")
+				.desc("Options for selecting cutoff value of factor (Default: 0.2)").hasArg()
+				.argName("factor cutoff").build());
+		
 		return options;
 
 	} 
@@ -327,6 +345,11 @@ public class Main implements IPercentileSelector{
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
 			mlAlg = cmd.getOptionValue("a");
+			if(cmd.getOptionValue("fc")!=null)
+			{
+				factorCutoffOption = cmd.getOptionValue("fc");
+				factorCutoff = Double.parseDouble(factorCutoffOption);	
+			}
 
 		} catch (Exception e) {
 			printHelp(options);
