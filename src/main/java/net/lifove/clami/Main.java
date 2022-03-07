@@ -122,7 +122,7 @@ public class Main implements IPercentileSelector{
 			
 			if(finalFactor >= factorCutoff)
 			{
-				System.out.println(finalFactor + " 해당 파일은 CLA/CLAMI에 적합한 데이터 입니다.");
+				System.out.println("This data is suitable for CLA/CLAMI.");
 				if (experimental == null || experimental.equals("")) {
 						// do prediction
 						prediction(instances, posLabelValue, false, dataFilePath);
@@ -132,7 +132,7 @@ public class Main implements IPercentileSelector{
 			}
 
 			else
-				System.out.println(finalFactor +" 해당 파일은 CLA/CLAMI에 적합하지 않은 데이터 입니다.");
+				System.out.println("This data is not suitable for CLA/CLAMI.");
 		}
 	}
 
