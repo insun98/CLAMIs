@@ -89,7 +89,7 @@ public class Utils {
 		double recall = (double)TP / (TP + FN);
 		double f1 = (2 * (precision * recall)) / (precision + recall);
 		if (!experimental) {
-		
+			System.out.println(fileName);
 			System.out.println("TP: " + TP);
 			System.out.println("FP: " + FP);
 			System.out.println("TN: " + TN);
@@ -202,7 +202,64 @@ public class Utils {
 		}
 		return cutoffForHigherValuesOfAttribute;
 	}
+	/**
+	 * Get higher value cutoffs for each attribute
+	 * 
+	 * @param instances
+	 * @param percentileCutoff
+	 * @return double[]
+	 */
+	public static double[] getHigherValueCutoffsForACL(Instances instances) {
+		// compute median values for attributes
+		double[] cutoffForHigherValuesOfAttribute = new double[instances.numAttributes()];
 
+		for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
+			if (attrIdx == instances.classIndex())
+				continue;
+			cutoffForHigherValuesOfAttribute[attrIdx] = StatUtils.mean(instances.attributeToDoubleArray(attrIdx)) / 2.0;
+		}
+		return cutoffForHigherValuesOfAttribute;
+	}
+
+	public static double getPDrForACL(Instances instances, double[] K) {
+		double PDr = 0.0;
+		double PD = 0.0;
+		double halfNumOfMetrics =0.0;
+		halfNumOfMetrics = (instances.numAttributes()-1) / 2.0;
+		for(int i = 0; i < instances.numInstances(); i++) {
+			if(K[i]>halfNumOfMetrics)
+				PD++;
+		}	
+		PDr = PD / instances.numInstances();
+		return PDr;
+	}
+	
+	public static double getCutoffForACL(Instances instances, double[] K) {
+		double PDr = Utils.getPDrForACL(instances, K);
+		double AMIVS = 0.0;
+		double MMIVS = 0.0;
+		double cutoff =0.0;
+		double HVIMS =0.0;
+		int numOfMetrics = instances.numAttributes()-1;
+		AMIVS = StatUtils.mean(K);
+		MMIVS = StatUtils.percentile(K, 50);
+		HVIMS = (2 * AMIVS * MMIVS) / (AMIVS + MMIVS);
+		
+		if(PDr< 0.5) {
+			
+			cutoff =( HVIMS* PDr)+ ((numOfMetrics - AMIVS ) *(1-PDr));
+		}else {
+			cutoff = (2*numOfMetrics*(1-PDr)*HVIMS)/(numOfMetrics*(1-PDr)+HVIMS);
+		}
+//		System.out.println("PDr: " + PDr);
+//		System.out.println("AMIVS: " + AMIVS);
+//		System.out.println("MMIVS: " + MMIVS);
+//		System.out.println("HVIMS: " + HVIMS);
+////		System.out.println("Cutoff: " + cutoff);
+		return cutoff;
+		
+	
+	}
 	/**
 	 * Return the HashMap that the key is Metric Violation Score and the value is
 	 * string of metric indexes
