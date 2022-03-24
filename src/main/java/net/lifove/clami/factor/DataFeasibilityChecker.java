@@ -78,7 +78,6 @@ public class DataFeasibilityChecker {
 		}
 		
 		Arrays.sort(scoreOfInstances);
-		
 		valueOfMaxVote = scoreOfInstances[instances.numInstances()-1] ;
 		
 		for (int instIdx = 0; instIdx < instances.numInstances(); instIdx++) {
@@ -93,7 +92,7 @@ public class DataFeasibilityChecker {
 		numberOfMetrics = new DataFactor("numberOfMetrics", instances.numAttributes());
 		numberOfGroups = new DataFactor("numberOfGroups", numOfGroup);
 		numberOfMaxVote = new DataFactor("numberOfMaxVotes", numOfMaxVote);
-		MaxValueOfVotes = new DataFactor("valueOfMaxVote", valueOfMaxVote);
+		MaxValueOfVotes = new DataFactor("MaxValueOfVotes", valueOfMaxVote);
 		
 		addBasicFactors();
 		addAdvancedFactor();
@@ -111,7 +110,10 @@ public class DataFeasibilityChecker {
 	
 	public void addAdvancedFactor() {
 		DataFactorGIR gir = new DataFactorGIR(factors);
+		DataFactorGMR gmr = new DataFactorGMR(factors);
 		addDataFactor(gir.computeValue());
+		addDataFactor(gmr.computeValue());
+		
 	}
 	
 	public void addDataFactor(DataFactor factor) {
@@ -122,6 +124,16 @@ public class DataFeasibilityChecker {
 		for (int i = 0; i < factors.size(); i++) {
 			System.out.println(factors.get(i).factorName + ": " + factors.get(i).getValue());
 		}
+	}
+	
+	public DataFactor getFactors(String name)
+	{
+		for(int i = 0; i < factors.size(); i++)
+		{
+			if(factors.get(i).factorName.equals(name))
+				return factors.get(i);
+		}		
+		return null;
 	}
 
 
