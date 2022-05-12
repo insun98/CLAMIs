@@ -101,6 +101,9 @@ public class DataFeasibilityChecker {
 		numberOfGroups = new DataFactor("numberOfGroups", numOfGroup);
 		numberOfMaxVote = new DataFactor("numberOfMaxVotes", numOfMaxVote);
 		MaxValueOfVotes = new DataFactor("MaxValueOfVotes", valueOfMaxVote);
+		
+		addBasicFactors();
+		addAdvancedFactor();
 	}
 
 

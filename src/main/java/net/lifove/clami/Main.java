@@ -42,8 +42,6 @@ public class Main implements IPercentileSelector{
 	double percentileCutoff = 50;
 	double factorCutoff = 0.2;
 	String version="";
-	//boolean isClami="";
-	//boolean isClabi="";
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
@@ -51,6 +49,7 @@ public class Main implements IPercentileSelector{
 	String percentileOption;
 	String factorCutoffOption;
 	int sort = 0;
+	boolean isSuitable = false;
 
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -71,7 +70,7 @@ public class Main implements IPercentileSelector{
 			if (dir.isDirectory()) {
 				processMultipleFileInOneDirectory(dir);
 			} else {
-				processSingleFile();
+				processSingleFile(dataFilePath);
 			}
 		}
 			
@@ -94,7 +93,7 @@ public class Main implements IPercentileSelector{
 			Utils.makeFile("CLA");
 	}
 
-	private void processSingleFile() throws FileNotFoundException, IOException {
+	private void processSingleFile(String dataFilePath) throws FileNotFoundException, IOException {
 		// load an arff file
 		Instances instances = Utils.loadArff(dataFilePath, labelName);
 		
@@ -112,16 +111,15 @@ public class Main implements IPercentileSelector{
 			}
 
 			// For computing data factors 
-			
 			DataFeasibilityChecker data = new DataFeasibilityChecker();
 			data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
 			DataFactor GIR = data.getFactors("GIR");
-			DataFactor GMR = data.getFactors("GMR");
 			
-			double finalFactor = 3 * GIR.getValue() + GMR.getValue();
+			double finalFactor = GIR.getValue();
 			
 			if(finalFactor >= factorCutoff)
 			{
+				isSuitable = true;
 				System.out.println("This data is suitable for CLA/CLAMI.");
 				if (experimental == null || experimental.equals("")) {
 						// do prediction
@@ -130,9 +128,9 @@ public class Main implements IPercentileSelector{
 						experiment(instances, posLabelValue, dataFilePath);
 					}
 			}
-
-			else
-				System.out.println("This data is not suitable for CLA/CLAMI.");
+			else {
+				System.out.println("This data is not suitable for CLA/CLAMI.");	
+			}
 		}
 	}
 
@@ -140,34 +138,11 @@ public class Main implements IPercentileSelector{
 		File[] fileList = dir.listFiles();
 
 		for (File file : fileList) {
-			// load an arff file
+
 			Instances instances = Utils.loadArff(file.toString(), labelName);
 			if (instances == null) continue ;
 			
-			//percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
-
-			if (instances != null) {
-				double unit = (double) 100 / (instances.numInstances());
-				// double unitFloor = Math.floor(unit);
-				double unitCeil = Math.ceil(unit);
-
-				// TODO need to check how median is computed
-				if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
-					System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
-					return;
-				}
-				
-				// For computing data factors 
-				DataFeasibilityChecker data = new DataFeasibilityChecker();
-				data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
-
-				if (experimental == null || experimental.equals("")) {
-					// do prediction
-					prediction(instances, posLabelValue, false, file.toString());
-				} else {
-					experiment(instances, posLabelValue, file.toString());
-				}
-			}
+			processSingleFile(file.toString());
 			
 		}
 	}
