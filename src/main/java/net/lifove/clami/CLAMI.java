@@ -1,5 +1,6 @@
 package net.lifove.clami;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import net.lifove.clami.util.Utils;
@@ -14,6 +15,7 @@ public class CLAMI implements ICLAMI {
 	boolean isExperimental;
 	protected HashMap<Integer, String> metricIdxWithTheSameViolationScores;
 	Classifier classifier;
+	private ArrayList<String> labelResult = new ArrayList<String>();
 	
 	/**
 	 * Constructor
@@ -68,6 +70,7 @@ public class CLAMI implements ICLAMI {
 		getCLAMITrainingSet(keys, instances, positiveLabel, percentileCutoff);
 		getPredictedLabels(suppress, instances);
 		printResult(instances, experimental, filePath, suppress, positiveLabel);
+		
 	}
 	
 	/**
@@ -132,7 +135,10 @@ public class CLAMI implements ICLAMI {
 			classifier.buildClassifier(trainingInstances);
 
 			for (int instIdx = 0; instIdx < testInstances.numInstances(); instIdx++) {
+				
 				double LabelIdx = classifier.classifyInstance(testInstances.get(instIdx));
+				labelResult.add(testInstances.classAttribute().value((int) LabelIdx));
+				
 				if (!suppress)
 					System.out.println("CLAMI: Instance " + (instIdx + 1) + " predicted as, "
 							+ testInstances.classAttribute().value((int) LabelIdx) +
@@ -160,6 +166,14 @@ public class CLAMI implements ICLAMI {
 		Utils.printEvaluationResult(instances, testInstances, trainingInstances, classifier, positiveLabel,
 				experimental, filePath);
 
+	}
+	
+	/**
+	 * Return predicted label ArrayList
+	 * @return
+	 */
+	public ArrayList<String> getLabelResult() { 
+		return labelResult;
 	}
 
 }

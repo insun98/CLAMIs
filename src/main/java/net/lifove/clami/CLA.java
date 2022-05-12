@@ -11,6 +11,7 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 public class CLA implements ICLA {
 	protected Instances instancesByCLA = null;
+	private ArrayList<String> labelResult = new ArrayList<String>();
 
 	/**
 	 * Get CLA result
@@ -112,14 +113,12 @@ public class CLA implements ICLA {
 		int TP = 0, FP = 0, TN = 0, FN = 0;
 
 		for (int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++) {
+			labelResult.add(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
+			
 			if (!suppress) {
 				Result = Result + "CLA: Instance " + (instIdx + 1) + " predicted as, "
 						+ Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx) + ", (Actual class: "
 						+ Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") " +"\n";
-
-//				System.out.println("CLA: Instance " + (instIdx + 1) + " predicted as, "
-//						+ Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx) + ", (Actual class: "
-//						+ Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") ");
 			}
 			if (!Double.isNaN(instances.get(instIdx).classValue())) {
 				if (Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx)
@@ -149,4 +148,14 @@ public class CLA implements ICLA {
 					"No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 
 	}
+
+	/**
+	 * Return predicted label ArrayList
+	 * @return
+	 */
+	public ArrayList<String> getLabelResult() { 
+		return labelResult;
+	}
+	
+	
 }
