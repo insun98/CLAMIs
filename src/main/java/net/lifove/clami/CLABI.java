@@ -9,6 +9,9 @@ import net.lifove.clami.util.Utils;
 import weka.classifiers.Classifier;
 import weka.core.Instances;
 
+/**
+ * This class run for CLABI. 
+ */
 public class CLABI implements ICLAMI {
 
 	protected Instances trainingInstances;

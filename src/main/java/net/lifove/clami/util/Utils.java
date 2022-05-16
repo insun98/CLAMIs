@@ -27,7 +27,8 @@ public class Utils {
 	
 	private static ArrayList<ArrayList<Object>> Data = new ArrayList<ArrayList<Object>>();
 	private static int number = 0;
-
+	private static ArrayList<Double> performanceResult = new ArrayList<Double>();
+	
 	/**
 	 * To create a result file 
 	 * @param versionName
@@ -90,17 +91,9 @@ public class Utils {
 		double precision = (double) TP / (TP + FP);
 		double recall = (double)TP / (TP + FN);
 		double f1 = (2 * (precision * recall)) / (precision + recall);
+		double MCC = ((TP*TN)-(FP*FN))/Math.sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)); 
 		if (!experimental) {
 			Result = Result + "TP: " + TP + "\n"+"FP: " + FP + "\n"+"TN: " + TN + "\n"+"FN: " + FN + "\n"+"Precision: " + precision + "\n"+"Recall: " + recall + "\n"+"F1: " + f1 + "\n";
-//			System.out.println(fileName);
-//			System.out.println("TP: " + TP);
-//			System.out.println("FP: " + FP);
-//			System.out.println("TN: " + TN);
-//			System.out.println("FN: " + FN);
-//
-//			System.out.println("precision: " + precision);
-//			System.out.println("recall: " + recall);
-//			System.out.println("f1: " + f1);
 		} else
 			System.out.print(precision + "," + recall + "," + f1);
 		Options.setResult(Result);
@@ -119,8 +112,23 @@ public class Utils {
 		Data.add(number, subData);
 
 		number++;
-
+		
+		performanceResult.add(precision); 
+		performanceResult.add(recall); 
+		performanceResult.add(f1); 
+		performanceResult.add(null); 
+		performanceResult.add(MCC); 
+		
 	}
+
+	/**
+	 * Return performance result ArrayList 
+	 * @return
+	 */
+	public static ArrayList<Double> getPerformanceResult() {
+		return performanceResult;
+	}
+
 
 	/**
 	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall, f1, AUC, and MCC. 
@@ -184,7 +192,13 @@ public class Utils {
 		Data.add(number, subData);
 
 		number++;
-
+		
+		performanceResult.add(precision); 
+		performanceResult.add(recall); 
+		performanceResult.add(f1); 
+		performanceResult.add(AUC); 
+		performanceResult.add(MCC); 
+		
 	}
 
 	/**

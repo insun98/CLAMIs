@@ -8,10 +8,12 @@ import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
-
+/**
+ * This class run for CLA. 
+ */
 public class CLA implements ICLA {
 	protected Instances instancesByCLA = null;
-	private ArrayList<String> labelResult = new ArrayList<String>();
+	private static ArrayList<String> labelResult = new ArrayList<String>();
 
 	/**
 	 * Get CLA result
@@ -36,6 +38,7 @@ public class CLA implements ICLA {
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, String filePath) {
+		labelResult = new ArrayList<>();
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, filePath, suppress, positiveLabel);
 		//instances = removeNoiseMetrics(instances);
@@ -153,7 +156,7 @@ public class CLA implements ICLA {
 	 * Return predicted label ArrayList
 	 * @return
 	 */
-	public ArrayList<String> getLabelResult() { 
+	public static ArrayList<String> getLabelResult() { 
 		return labelResult;
 	}
 	

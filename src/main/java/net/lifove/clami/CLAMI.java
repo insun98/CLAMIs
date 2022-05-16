@@ -7,6 +7,9 @@ import net.lifove.clami.util.Utils;
 import weka.classifiers.Classifier;
 import weka.core.Instances;
 
+/**
+ * This class run for CLAMI. 
+ */
 public class CLAMI implements ICLAMI {
 	protected Instances trainingInstances;
 	protected Instances testInstances;
@@ -15,7 +18,7 @@ public class CLAMI implements ICLAMI {
 	boolean isExperimental;
 	protected HashMap<Integer, String> metricIdxWithTheSameViolationScores;
 	Classifier classifier;
-	private ArrayList<String> labelResult = new ArrayList<String>();
+	private static ArrayList<String> labelResult = new ArrayList<String>();
 	
 	/**
 	 * Constructor
@@ -55,6 +58,7 @@ public class CLAMI implements ICLAMI {
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, String filePath) {
+		labelResult = new ArrayList<>();
 		instancesByCLA = new Instances(instances);
 		
 		clustering(instances, percentileCutoff, positiveLabel);
@@ -172,7 +176,7 @@ public class CLAMI implements ICLAMI {
 	 * Return predicted label ArrayList
 	 * @return
 	 */
-	public ArrayList<String> getLabelResult() { 
+	public static ArrayList<String> getLabelResult() { 
 		return labelResult;
 	}
 

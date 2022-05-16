@@ -26,13 +26,7 @@ import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
 /**
- * CLAMI implementation: CLAMI: Defect Prediction on Unlabeled Datasets, in
- * Proceedings of the 30th IEEE/ACM International Conference on Automated
- * Software Engineering (ASE 2015), Lincoln, Nebraska, USA, November 9 - 13,
- * 2015
- * 
- * @author JC
- *
+ * Main class that executes CLAMI according to proper version. 
  */
 public class Main implements IPercentileSelector{
 
@@ -93,6 +87,12 @@ public class Main implements IPercentileSelector{
 			Utils.makeFile("CLA");
 	}
 
+	/**
+	 * Run for single file when input path is one file. 
+	 * @param dataFilePath
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	private void processSingleFile(String dataFilePath) throws FileNotFoundException, IOException {
 		// load an arff file
 		Instances instances = Utils.loadArff(dataFilePath, labelName);
@@ -134,6 +134,12 @@ public class Main implements IPercentileSelector{
 		}
 	}
 
+	/**
+	 * Run when input path is directory that contain several files. 
+	 * @param dir
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	private void processMultipleFileInOneDirectory(File dir) throws FileNotFoundException, IOException {
 		File[] fileList = dir.listFiles();
 
@@ -399,15 +405,15 @@ public class Main implements IPercentileSelector{
 		
 	}
 
-@Override
-public double getTopPercentileCutoff(Instances instances, String positiveLabel) {
-	// TODO Auto-generated method stub
-	return 0;
-}
-
-@Override
-public double getBottomPercentileCutoff(Instances instances, String positiveLabel) {
-	// TODO Auto-generated method stub
-	return 0;
-}
+	@Override
+	public double getTopPercentileCutoff(Instances instances, String positiveLabel) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
+	public double getBottomPercentileCutoff(Instances instances, String positiveLabel) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }
