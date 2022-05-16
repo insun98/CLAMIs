@@ -2,6 +2,9 @@ package net.lifove.clami.factor;
 
 import java.util.ArrayList;
 
+/**
+ * This class is for data factor 'GIR'
+ */
 public class DataFactorGIR extends DataFactor {
 
 	private ArrayList<DataFactor> factors;

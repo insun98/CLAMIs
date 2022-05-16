@@ -4,6 +4,9 @@ import java.util.Arrays;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
+/**
+ * This class run for CLAMI+. 
+ */
 public class CLAMIPlus extends CLAMI implements ICLAMI {
 	CLAMIPlus(String mlAlg, boolean isExperimental) {
 		super(mlAlg, isExperimental);

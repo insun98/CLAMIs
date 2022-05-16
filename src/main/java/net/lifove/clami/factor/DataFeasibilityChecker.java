@@ -9,6 +9,9 @@ import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 import net.lifove.clami.CLA;
 import weka.core.Instances;
 
+/**
+ * This class has all factors for data feasibility check 
+ */
 public class DataFeasibilityChecker {
 
 	private DataFactor numberOfInstance;

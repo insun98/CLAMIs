@@ -13,6 +13,16 @@ public class Tools {
 	
 	static CLA cla = new CLA();
 	
+	/**
+	 * Return percentile cutoff 
+	 * @param instances
+	 * @param positiveLabel
+	 * @param instancesByCLA
+	 * @param score
+	 * @param totalViolation
+	 * @param sum
+	 * @return
+	 */
 	public double selectPercentileCutoff(Instances instances, String positiveLabel, Instances instancesByCLA,
 			double score, double totalViolation, double sum) {
 		double finalPercentileCutoff = 0.0;
@@ -46,6 +56,13 @@ public class Tools {
 		return percentileCutoff;
 	}
 
+	/**
+	 * Compute number of max vote, value of max vote using ks-test
+	 * @param instancesByCLA
+	 * @param instances
+	 * @param percentileCutoff
+	 * @param positiveLabel
+	 */
 	public void ksTest(Instances instancesByCLA, Instances instances, double percentileCutoff, String positiveLabel) {
 		
 		double criticalValue;
@@ -124,6 +141,11 @@ public class Tools {
 		
 	}
 
+	/**
+	 * Compute correlation between each metrics using Spearman correlation  
+	 * @param instances
+	 * @param instancesByCLA
+	 */
 	public void calculateSpearmanCorrelation(Instances instances, Instances instancesByCLA) {
 
 		for (int attrIdx = 0; attrIdx < instances.numAttributes(); attrIdx++) {
