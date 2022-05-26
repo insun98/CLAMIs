@@ -30,20 +30,22 @@ import weka.core.Instances;
  */
 public class Main implements IPercentileSelector{
 
-	String dataFilePath;
-	String labelName;
-	String posLabelValue;
-	double percentileCutoff = 50;
-	double factorCutoff = 0.2;
-	String version="";
-	boolean help = false;
-	boolean suppress = false;
-	String experimental;
-	String mlAlg = "";
-	String percentileOption;
-	String factorCutoffOption;
-	int sort = 0;
-	boolean isSuitable = false;
+	private String dataFilePath;
+	private String labelName;
+	private String posLabelValue;
+	private double percentileCutoff = 50;
+	private double factorCutoff = 0.2;
+	private static double dataFactorValue;
+	private String version="";
+	private boolean help = false;
+	private boolean suppress = false;
+	private String experimental;
+	private String mlAlg = "";
+	private String percentileOption;
+	private String factorCutoffOption;
+	private int sort = 0;
+	private static boolean isSuitable = false;
+	private static boolean hasRealLabel = false;
 
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -97,6 +99,12 @@ public class Main implements IPercentileSelector{
 		// load an arff file
 		Instances instances = Utils.loadArff(dataFilePath, labelName);
 		
+		if (Utils.getStringValueOfInstanceLabel(instances, 0).equals("?")) {
+			setHasRealLabel(false);
+		} else {
+			setHasRealLabel(true);
+		}
+		
 		percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
 
 		if (instances != null) {
@@ -116,10 +124,12 @@ public class Main implements IPercentileSelector{
 			DataFactor GIR = data.getFactors("GIR");
 			
 			double finalFactor = GIR.getValue();
+			setdataFactorValue(finalFactor);
+			System.out.println("factor : " + getdataFactorValue()); 
 			
 			if(finalFactor >= factorCutoff)
 			{
-				isSuitable = true;
+				setIsSuitable(true);
 				System.out.println("This data is suitable for CLA/CLAMI.");
 				if (experimental == null || experimental.equals("")) {
 						// do prediction
@@ -132,6 +142,11 @@ public class Main implements IPercentileSelector{
 				System.out.println("This data is not suitable for CLA/CLAMI.");	
 			}
 		}
+	}
+
+	private String getfinalFactor() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**
@@ -416,4 +431,30 @@ public class Main implements IPercentileSelector{
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
+	public Double getFactorCutoff() {
+		return this.factorCutoff;
+	}
+	
+	public void setIsSuitable(boolean isSuitable) {
+		this.isSuitable = isSuitable;
+	}
+	public static boolean getIsSuitable() {
+		return isSuitable;
+	}
+	
+	public void setHasRealLabel(boolean hasRealLabel) {
+		this.hasRealLabel = hasRealLabel;
+	}
+	public static boolean getHasRealLabel() {
+		return hasRealLabel;
+	}
+	
+	public void setdataFactorValue(Double dataFactorValue) {
+		this.dataFactorValue = dataFactorValue;
+	}
+	public static Double getdataFactorValue() {
+		return dataFactorValue;
+	}
+	
 }
