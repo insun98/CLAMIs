@@ -27,7 +27,8 @@ public class Utils {
 	
 	private static ArrayList<ArrayList<Object>> Data = new ArrayList<ArrayList<Object>>();
 	private static int number = 0;
-	private static ArrayList<Double> performanceResult = new ArrayList<Double>();
+	private static Double[] CLAperformanceResult = new Double[4];
+	private static Double[] CLAMIperformanceResult = new Double[5];
 	
 	/**
 	 * To create a result file 
@@ -113,22 +114,28 @@ public class Utils {
 
 		number++;
 		
-		performanceResult.add(precision); 
-		performanceResult.add(recall); 
-		performanceResult.add(f1); 
-		performanceResult.add(null); 
-		performanceResult.add(MCC); 
+		CLAperformanceResult[0] = precision;
+		CLAperformanceResult[1] = recall; 
+		CLAperformanceResult[2] = f1;
+		CLAperformanceResult[3] = MCC; 
 		
 	}
 
 	/**
-	 * Return performance result ArrayList 
+	 * Return CLA performance result ArrayList 
 	 * @return
 	 */
-	public static ArrayList<Double> getPerformanceResult() {
-		return performanceResult;
+	public static Double[] getCLAPerformanceResult() {
+		return CLAperformanceResult;
 	}
 
+	/**
+	 * Return CLAMI performance result ArrayList 
+	 * @return
+	 */
+	public static Double[] getCLAMIPerformanceResult() {
+		return CLAMIperformanceResult; 
+	}
 
 	/**
 	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall, f1, AUC, and MCC. 
@@ -193,11 +200,11 @@ public class Utils {
 
 		number++;
 		
-		performanceResult.add(precision); 
-		performanceResult.add(recall); 
-		performanceResult.add(f1); 
-		performanceResult.add(AUC); 
-		performanceResult.add(MCC); 
+		CLAMIperformanceResult[0] = precision;
+		CLAMIperformanceResult[1] = recall; 
+		CLAMIperformanceResult[2] = f1;
+		CLAMIperformanceResult[3] = AUC;
+		CLAMIperformanceResult[4] = MCC;
 		
 	}
 
