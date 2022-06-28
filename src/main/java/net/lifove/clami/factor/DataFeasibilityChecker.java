@@ -3,6 +3,7 @@ package net.lifove.clami.factor;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import net.lifove.clami.util.Utils;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
@@ -70,18 +71,13 @@ public class DataFeasibilityChecker {
 				instancesByCLA = cla.clustering(newInstances, percentileCutoff, positiveLabel);
 				numOfGroup++;
 
-				for (int instIdx = 0; instIdx < newInstances.numInstances(); instIdx++) {
 
-					if (instancesByCLA.get(instIdx).value(newInstances.numAttributes() - 1) == Double
-							.parseDouble(positiveLabel)) {
-						scoreOfInstances[instIdx]++;
-						samePrediction[instIdx]++;
-					} else samePrediction[instIdx] = samePrediction[instIdx] + 0;
-				}
+
 			}
 
 
 		}
+		System.out.println(scoreOfInstances[0]);
 
 		Arrays.sort(scoreOfInstances);
 		valueOfMaxVote = scoreOfInstances[instances.numInstances() - 1];
