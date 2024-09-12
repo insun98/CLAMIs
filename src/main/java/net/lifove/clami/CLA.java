@@ -8,16 +8,19 @@ import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
-
+/**
+ * This class run for CLA. 
+ */
 public class CLA implements ICLA {
 	protected Instances instancesByCLA = null;
+	private static ArrayList<String> labelResult = new ArrayList<String>();
 
 	/**
 	 * Get CLA result
 	 * @param instances
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 
-	 * @param supress detailed prediction results
+	 * @param suppress detailed prediction results
 	 * @param filePath; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress, String filePath) {
@@ -29,12 +32,13 @@ public class CLA implements ICLA {
 	 * @param instances
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 
-	 * @param supress detailed prediction results
+	 * @param suppress detailed prediction results
 	 * @param experimental; boolean value whether experimental or not 
 	 * @param filePath; string value of file name  
 	 */
 	public void getResult(Instances instances, double percentileCutoff, String positiveLabel, boolean suppress,
 			boolean experimental, String filePath) {
+		labelResult = new ArrayList<>();
 		instancesByCLA = clustering(instances, percentileCutoff, positiveLabel);
 		printResult(instances, experimental, filePath, suppress, positiveLabel);
 		//instances = removeNoiseMetrics(instances);
@@ -103,20 +107,22 @@ public class CLA implements ICLA {
 	 * @param instances
 	 * @param experimental; boolean value whether experimental or not 
 	 * @param filePath; string value of file name  
-	 * @param supress detailed prediction results
+	 * @param suppress detailed prediction results
 	 * @param positiveLabel; string value of positive label 
 	 */
 	public void printResult(Instances instances, boolean experimental, String filePath, boolean suppress,
 			String positiveLabel) {
-
+		String Result ="";
 		int TP = 0, FP = 0, TN = 0, FN = 0;
 
 		for (int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++) {
-			if (!suppress)
-				System.out.println("CLA: Instance " + (instIdx + 1) + " predicted as, "
+			labelResult.add(Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx));
+			
+			if (!suppress) {
+				Result = Result + "CLA: Instance " + (instIdx + 1) + " predicted as, "
 						+ Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx) + ", (Actual class: "
-						+ Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") ");
-
+						+ Utils.getStringValueOfInstanceLabel(instances, instIdx) + ") " +"\n";
+			}
 			if (!Double.isNaN(instances.get(instIdx).classValue())) {
 				if (Utils.getStringValueOfInstanceLabel(instancesByCLA, instIdx)
 						.equals(Utils.getStringValueOfInstanceLabel(instances, instIdx))) {
@@ -132,7 +138,8 @@ public class CLA implements ICLA {
 				}
 			}
 		}
-
+		System.out.println(Result);
+		Options.setResult(Result);
 		if (TP + TN + FP + FN > 0)
 			try {
 				Utils.printEvaluationResultCLA(TP, TN, FP, FN, experimental, filePath);
@@ -144,4 +151,14 @@ public class CLA implements ICLA {
 					"No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 
 	}
+
+	/**
+	 * Return predicted label ArrayList
+	 * @return
+	 */
+	public static ArrayList<String> getLabelResult() { 
+		return labelResult;
+	}
+	
+	
 }

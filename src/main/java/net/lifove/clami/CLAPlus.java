@@ -3,6 +3,9 @@ package net.lifove.clami;
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
+/**
+ * This class run for CLA+. 
+ */
 public class CLAPlus extends CLA implements ICLA {
 
 	/**

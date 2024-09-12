@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.lifove.clami.Options;
 import org.apache.commons.math3.stat.StatUtils;
 import com.google.common.primitives.Doubles;
 
@@ -26,7 +27,9 @@ public class Utils {
 	
 	private static ArrayList<ArrayList<Object>> Data = new ArrayList<ArrayList<Object>>();
 	private static int number = 0;
-
+	private static Double[] CLAperformanceResult = new Double[4];
+	private static Double[] CLAMIperformanceResult = new Double[5];
+	
 	/**
 	 * To create a result file 
 	 * @param versionName
@@ -76,31 +79,26 @@ public class Utils {
 
 	/**
 	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall, and f1. 
-	 * @param tP
-	 * @param tN
-	 * @param fP
-	 * @param fN
+	 * @param TP
+	 * @param TN
+	 * @param FP
+	 * @param FN
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
 	public static void printEvaluationResultCLA(int TP,int  TN, int FP, int FN, boolean experimental, String fileName) {
-
+		String Result ="";
+		Result = Options.getResult();
 		double precision = (double) TP / (TP + FP);
 		double recall = (double)TP / (TP + FN);
 		double f1 = (2 * (precision * recall)) / (precision + recall);
+		double MCC = ((TP*TN)-(FP*FN))/Math.sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)); 
 		if (!experimental) {
-			System.out.println(fileName);
-			System.out.println("TP: " + TP);
-			System.out.println("FP: " + FP);
-			System.out.println("TN: " + TN);
-			System.out.println("FN: " + FN);
-
-			System.out.println("precision: " + precision);
-			System.out.println("recall: " + recall);
-			System.out.println("f1: " + f1);
+			Result = Result + "TP: " + TP + "\n"+"FP: " + FP + "\n"+"TN: " + TN + "\n"+"FN: " + FN + "\n"+"Precision: " + precision + "\n"+"Recall: " + recall + "\n"+"F1: " + f1 + "\n";
 		} else
 			System.out.print(precision + "," + recall + "," + f1);
-
+		Options.setResult(Result);
+		System.out.println(Options.getResult());
 		ArrayList<Object> subData = new ArrayList<Object>();
 
 		subData.add(0, fileName);
@@ -115,7 +113,28 @@ public class Utils {
 		Data.add(number, subData);
 
 		number++;
+		
+		CLAperformanceResult[0] = precision;
+		CLAperformanceResult[1] = recall; 
+		CLAperformanceResult[2] = f1;
+		CLAperformanceResult[3] = MCC; 
+		
+	}
 
+	/**
+	 * Return CLA performance result ArrayList 
+	 * @return
+	 */
+	public static Double[] getCLAPerformanceResult() {
+		return CLAperformanceResult;
+	}
+
+	/**
+	 * Return CLAMI performance result ArrayList 
+	 * @return
+	 */
+	public static Double[] getCLAMIPerformanceResult() {
+		return CLAMIperformanceResult; 
 	}
 
 	/**
@@ -180,7 +199,13 @@ public class Utils {
 		Data.add(number, subData);
 
 		number++;
-
+		
+		CLAMIperformanceResult[0] = precision;
+		CLAMIperformanceResult[1] = recall; 
+		CLAMIperformanceResult[2] = f1;
+		CLAMIperformanceResult[3] = AUC;
+		CLAMIperformanceResult[4] = MCC;
+		
 	}
 
 	/**
@@ -206,7 +231,7 @@ public class Utils {
 	 * Get higher value cutoffs for each attribute
 	 * 
 	 * @param instances
-	 * @param percentileCutoff
+	 *
 	 * @return double[]
 	 */
 	public static double[] getHigherValueCutoffsForACL(Instances instances) {
@@ -458,12 +483,13 @@ public class Utils {
 	 * Get label value of an instance
 	 * 
 	 * @param instances
-	 * @param instance  index
+	 * @param instanceIndex
 	 * @return string label of an instance
 	 */
-	static public String getStringValueOfInstanceLabel(Instances instances, int intanceIndex) {
-		return instances.instance(intanceIndex).stringValue(instances.classIndex());
+	static public String getStringValueOfInstanceLabel(Instances instances, int instanceIndex) {
+		return instances.instance(instanceIndex).stringValue(instances.classIndex());
 	}
+
 
 	/**
 	 * Get median from ArraList<Double>
@@ -529,8 +555,7 @@ public class Utils {
 	 * Get instances by removing specific instances
 	 * 
 	 * @param instances
-	 * @param instance  indices (e.g., 1,3,4) first index is 1
-	 * @param option    for invert selection
+	 * @param instanceIndices (e.g., 1,3,4) first index is 1
 	 * @return selected instances
 	 */
 	static public Instances getInstancesByRemovingSpecificInstances(Instances instances, String instanceIndices,

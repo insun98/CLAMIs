@@ -26,31 +26,26 @@ import net.lifove.clami.util.Utils;
 import weka.core.Instances;
 
 /**
- * CLAMI implementation: CLAMI: Defect Prediction on Unlabeled Datasets, in
- * Proceedings of the 30th IEEE/ACM International Conference on Automated
- * Software Engineering (ASE 2015), Lincoln, Nebraska, USA, November 9 - 13,
- * 2015
- * 
- * @author JC
- *
+ * Main class that executes CLAMI according to proper version. 
  */
 public class Main implements IPercentileSelector{
 
-	String dataFilePath;
-	String labelName;
-	String posLabelValue;
-	double percentileCutoff = 50;
-	double factorCutoff = 0.2;
-	String version="";
-	//boolean isClami="";
-	//boolean isClabi="";
-	boolean help = false;
-	boolean suppress = false;
-	String experimental;
-	String mlAlg = "";
-	String percentileOption;
-	String factorCutoffOption;
-	int sort = 0;
+	private String dataFilePath;
+	private String labelName;
+	private String posLabelValue;
+	private double percentileCutoff = 50;
+	private double factorCutoff = 0.2;
+	private static double dataFactorValue;
+	private String version="";
+	private boolean help = false;
+	private boolean suppress = false;
+	private String experimental;
+	private String mlAlg = "";
+	private String percentileOption;
+	private String factorCutoffOption;
+	private int sort = 0;
+	private static boolean isSuitable = false;
+	private static boolean hasRealLabel = false;
 
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -71,7 +66,7 @@ public class Main implements IPercentileSelector{
 			if (dir.isDirectory()) {
 				processMultipleFileInOneDirectory(dir);
 			} else {
-				processSingleFile();
+				processSingleFile(dataFilePath);
 			}
 		}
 			
@@ -94,9 +89,21 @@ public class Main implements IPercentileSelector{
 			Utils.makeFile("CLA");
 	}
 
-	private void processSingleFile() throws FileNotFoundException, IOException {
+	/**
+	 * Run for single file when input path is one file. 
+	 * @param dataFilePath
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void processSingleFile(String dataFilePath) throws FileNotFoundException, IOException {
 		// load an arff file
 		Instances instances = Utils.loadArff(dataFilePath, labelName);
+		
+		if (Utils.getStringValueOfInstanceLabel(instances, 0).equals("?")) {
+			setHasRealLabel(false);
+		} else {
+			setHasRealLabel(true);
+		}
 		
 		percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
 
@@ -112,16 +119,17 @@ public class Main implements IPercentileSelector{
 			}
 
 			// For computing data factors 
-			
 			DataFeasibilityChecker data = new DataFeasibilityChecker();
 			data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
 			DataFactor GIR = data.getFactors("GIR");
-			DataFactor GMR = data.getFactors("GMR");
 			
-			double finalFactor = 3 * GIR.getValue() + GMR.getValue();
+			double finalFactor = GIR.getValue();
+			setdataFactorValue(finalFactor);
+			System.out.println("factor : " + getdataFactorValue()); 
 			
 			if(finalFactor >= factorCutoff)
 			{
+				setIsSuitable(true);
 				System.out.println("This data is suitable for CLA/CLAMI.");
 				if (experimental == null || experimental.equals("")) {
 						// do prediction
@@ -130,44 +138,32 @@ public class Main implements IPercentileSelector{
 						experiment(instances, posLabelValue, dataFilePath);
 					}
 			}
-
-			else
-				System.out.println("This data is not suitable for CLA/CLAMI.");
+			else {
+				System.out.println("This data is not suitable for CLA/CLAMI.");	
+			}
 		}
 	}
 
+	private String getfinalFactor() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * Run when input path is directory that contain several files. 
+	 * @param dir
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	private void processMultipleFileInOneDirectory(File dir) throws FileNotFoundException, IOException {
 		File[] fileList = dir.listFiles();
 
 		for (File file : fileList) {
-			// load an arff file
+
 			Instances instances = Utils.loadArff(file.toString(), labelName);
 			if (instances == null) continue ;
 			
-			//percentileCutoff = getOptimalPercentile(instances, posLabelValue, percentileOption);
-
-			if (instances != null) {
-				double unit = (double) 100 / (instances.numInstances());
-				// double unitFloor = Math.floor(unit);
-				double unitCeil = Math.ceil(unit);
-
-				// TODO need to check how median is computed
-				if (unit >= 1 && 100 - unitCeil < percentileCutoff) {
-					System.err.println("Cutoff percentile must be 0 < and <=" + (100 - unitCeil));
-					return;
-				}
-				
-				// For computing data factors 
-				DataFeasibilityChecker data = new DataFeasibilityChecker();
-				data.computeNumberOfGroups(instances, instances, percentileCutoff, posLabelValue);
-
-				if (experimental == null || experimental.equals("")) {
-					// do prediction
-					prediction(instances, posLabelValue, false, file.toString());
-				} else {
-					experiment(instances, posLabelValue, file.toString());
-				}
-			}
+			processSingleFile(file.toString());
 			
 		}
 	}
@@ -424,15 +420,41 @@ public class Main implements IPercentileSelector{
 		
 	}
 
-@Override
-public double getTopPercentileCutoff(Instances instances, String positiveLabel) {
-	// TODO Auto-generated method stub
-	return 0;
-}
-
-@Override
-public double getBottomPercentileCutoff(Instances instances, String positiveLabel) {
-	// TODO Auto-generated method stub
-	return 0;
-}
+	@Override
+	public double getTopPercentileCutoff(Instances instances, String positiveLabel) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
+	public double getBottomPercentileCutoff(Instances instances, String positiveLabel) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public Double getFactorCutoff() {
+		return this.factorCutoff;
+	}
+	
+	public void setIsSuitable(boolean isSuitable) {
+		this.isSuitable = isSuitable;
+	}
+	public static boolean getIsSuitable() {
+		return isSuitable;
+	}
+	
+	public void setHasRealLabel(boolean hasRealLabel) {
+		this.hasRealLabel = hasRealLabel;
+	}
+	public static boolean getHasRealLabel() {
+		return hasRealLabel;
+	}
+	
+	public void setdataFactorValue(Double dataFactorValue) {
+		this.dataFactorValue = dataFactorValue;
+	}
+	public static Double getdataFactorValue() {
+		return dataFactorValue;
+	}
+	
 }

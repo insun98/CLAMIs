@@ -41,9 +41,7 @@ public class GenerateFinalWithPrediction {
 				   e.printStackTrace();
 			}
 		}
-		/**
-		 * To do:  version of CLAMI 
-		 */
+
 	}
 	
 	/**

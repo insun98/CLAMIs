@@ -1,19 +1,16 @@
 package net.lifove.clami;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
-
+/**
+ * This class run for ACL. 
+ */
 public class ACL implements ICLA {
 	protected Instances instancesByCLA = null;
 
 	/**
-	 * Get CLA result
+	 * Get ACL result
 	 * @param instances
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 
@@ -25,7 +22,7 @@ public class ACL implements ICLA {
 	}
 
 	/**
-	 * Get CLA result
+	 * Get ACL result
 	 * @param instances
 	 * @param percentileCutoff; cutoff percentile for cluster
 	 * @param positiveLabel; string value of positive label 

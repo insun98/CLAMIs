@@ -2,6 +2,9 @@ package net.lifove.clami;
 
 import weka.core.Instances;
 
+/**
+ * This class run for CLABI+. 
+ */
 public class CLABIPlus extends CLABI implements ICLAMI {
 
 	/**
